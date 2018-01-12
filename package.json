@@ -1,0 +1,19 @@
+{
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon ./index.js --exec babel-node",
+    "build": "babel ./index.js -d ./lib",
+    "serve": "node ./lib/index.js",
+    "run": "./script/run"
+  },
+  "dependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.6.0",
+    "http-server": "^0.11.1",
+    "node-twitterbot": "^0.2.2",
+    "nodemon": "^1.12.1",
+    "selenium-webdriver": "^3.0.1",
+    "shortid": "^2.2.8",
+    "twit": "^2.2.9"
+  }
+}
