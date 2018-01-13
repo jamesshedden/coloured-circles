@@ -22,42 +22,81 @@ const makeNumberRandomlyNegative = (number) => {
   return number;
 };
 
-const SNAKE_ANGLE = getRandomNumber(10, 50);
+let SNAKE_ANGLE = getRandomNumber(10, 50);
 
-const DIRECTION_INCREMENTS = {
-  [AVAILABLE_SNAKE_DIRECTIONS.TOP]: {
-    top: SNAKE_ANGLE,
-    left: 0,
-  },
-  [AVAILABLE_SNAKE_DIRECTIONS.RIGHT]: {
-    top: 0,
-    left: SNAKE_ANGLE,
-  },
-  [AVAILABLE_SNAKE_DIRECTIONS.BOTTOM]: {
-    top: -SNAKE_ANGLE,
-    left: 0,
-  },
-  [AVAILABLE_SNAKE_DIRECTIONS.LEFT]: {
-    top: 0,
-    left: SNAKE_ANGLE,
-  },
-  [AVAILABLE_SNAKE_DIRECTIONS.TOP_RIGHT]: {
-    top: -SNAKE_ANGLE,
-    left: SNAKE_ANGLE,
-  },
-  [AVAILABLE_SNAKE_DIRECTIONS.BOTTOM_RIGHT]: {
-    top: SNAKE_ANGLE,
-    left: SNAKE_ANGLE,
-  },
-  [AVAILABLE_SNAKE_DIRECTIONS.BOTTOM_LEFT]: {
-    top: SNAKE_ANGLE,
-    left: -SNAKE_ANGLE,
-  },
-  [AVAILABLE_SNAKE_DIRECTIONS.TOP_LEFT]: {
-    top: -SNAKE_ANGLE,
-    left: -SNAKE_ANGLE,
-  },
-};
+let CIRCLE_DIAMETER = getRandomNumber(20, 50);
+const CIRCLE_DIAMETER_MAX = getRandomNumber(20, 50);
+const IS_CIRCLE_DIAMETER_MAX_RANDOM_PER_DIRECTION = Math.random() < 0.5;
+
+const IS_CIRCLE_DIAMETER_RANDOM_PER_CIRCLE = Math.random() < 0.5;
+
+const getCircleDiameter = () => {
+  if (IS_CIRCLE_DIAMETER_RANDOM_PER_CIRCLE) {
+    return getRandomNumber(
+      20,
+      IS_CIRCLE_DIAMETER_MAX_RANDOM_PER_DIRECTION ?
+        getRandomNumber(20, 50) : CIRCLE_DIAMETER_MAX
+    );
+  };
+  return CIRCLE_DIAMETER;
+}
+
+const IS_SNAKE_ANGLE_RANDOM_PER_DIRECTION = Math.random() < 0.5;
+const IS_SNAKE_ANGLE_MAX_RANDOM_PER_DIRECTION = Math.random() < 0.5;
+
+const SNAKE_ANGLE_MAX = getRandomNumber(10, 50);
+
+const getSnakeAngle = () => {
+  if (IS_SNAKE_ANGLE_RANDOM_PER_DIRECTION) {
+    return getRandomNumber(
+      10,
+      IS_SNAKE_ANGLE_MAX_RANDOM_PER_DIRECTION ?
+        getRandomNumber(10, 50) : SNAKE_ANGLE_MAX
+    )
+  };
+
+  return SNAKE_ANGLE;
+}
+
+const makeDirectionIncrements = () => {
+  console.log('makeDirectionIncrements()');
+  return {
+    [AVAILABLE_SNAKE_DIRECTIONS.TOP]: {
+      top: getSnakeAngle(),
+      left: 0,
+    },
+    [AVAILABLE_SNAKE_DIRECTIONS.RIGHT]: {
+      top: 0,
+      left: getSnakeAngle(),
+    },
+    [AVAILABLE_SNAKE_DIRECTIONS.BOTTOM]: {
+      top: -getSnakeAngle(),
+      left: 0,
+    },
+    [AVAILABLE_SNAKE_DIRECTIONS.LEFT]: {
+      top: 0,
+      left: getSnakeAngle(),
+    },
+    [AVAILABLE_SNAKE_DIRECTIONS.TOP_RIGHT]: {
+      top: -getSnakeAngle(),
+      left: getSnakeAngle(),
+    },
+    [AVAILABLE_SNAKE_DIRECTIONS.BOTTOM_RIGHT]: {
+      top: getSnakeAngle(),
+      left: getSnakeAngle(),
+    },
+    [AVAILABLE_SNAKE_DIRECTIONS.BOTTOM_LEFT]: {
+      top: getSnakeAngle(),
+      left: -getSnakeAngle(),
+    },
+    [AVAILABLE_SNAKE_DIRECTIONS.TOP_LEFT]: {
+      top: -getSnakeAngle(),
+      left: -getSnakeAngle(),
+    },
+  };
+}
+
+let DIRECTION_INCREMENTS = makeDirectionIncrements();
 
 const isSquare = (n) => {
   return n > 0 && Math.sqrt(n) % 1 === 0;
@@ -111,8 +150,10 @@ let rValue;
 let gValue;
 let bValue;
 
+const MIN_COLORS_TOTAL = 3;
+
 if (IS_CIRCLE_COLOR_INCREMENTAL) {
-  colors = [...Array(getRandomNumber(1, 50))].map(() => {
+  colors = [...Array(getRandomNumber(MIN_COLORS_TOTAL, 50))].map(() => {
     if (!rValue || rValue > 255 || rValue < 0) rValue = getRandomNumber(0, 255);
     if (!gValue || gValue > 255 || gValue < 0) gValue = getRandomNumber(0, 255);
     if (!bValue || bValue > 255 || bValue < 0) bValue = getRandomNumber(0, 255);
@@ -126,7 +167,7 @@ if (IS_CIRCLE_COLOR_INCREMENTAL) {
     return color;
   });
 } else {
-  colors = [...Array(getRandomNumber(1, 50))].map(() => {
+  colors = [...Array(getRandomNumber(MIN_COLORS_TOTAL, 50))].map(() => {
     return getRandomRgbColour();
   });
 }
@@ -140,9 +181,10 @@ let createCircle;
 if (LAYOUT === 'confetti') {
   createCircle = () => {
     let circle = document.createElement('div');
+    let diameter = getCircleDiameter();
 
-    circle.style.width = '20px';
-    circle.style.height = '20px';
+    circle.style.width = `${ diameter }px`;
+    circle.style.height = `${ diameter }px`;
     circle.style.borderRadius = '50%';
     circle.style.position = 'absolute';
     circle.style.top = `${ getRandomNumber(0, window.innerHeight) }px`;
@@ -182,11 +224,12 @@ if (LAYOUT === 'confetti') {
       circle.style.left = `${ makeNumberRandomlyNegative(getRandomNumber(1, 6)) }px`;
     }
 
-    circle.style.width = '20px';
-    circle.style.height = '20px';
+    let diameter = getCircleDiameter();
+
+    circle.style.width = `${ diameter }px`;
+    circle.style.height = `${ diameter }px`;
     circle.style.flex = 'none';
     circle.style.borderRadius = '50%';
-    circle.margin = '20px';
     circle.style.backgroundColor = colors[getRandomNumber(0, colors.length - 1)];
 
     circleContainer.appendChild(circle);
@@ -205,6 +248,8 @@ if (LAYOUT === 'confetti') {
 
   const IS_DIRECTION_DIFFERENT_PER_CIRCLE = Math.random() < 0.5;
   const IS_DIRECTION_DIFFERENT_ON_RESET = Math.random() < 0.5;
+  const IS_DIRECTION_INCREMENTS_DIFFERENT_PER_CIRCLE = Math.random() < 0.5;
+  const IS_DIRECTION_INCREMENTS_DIFFERENT_ON_RESET = Math.random() < 0.5;
 
   let SNAKE_DIRECTION;
   SNAKE_DIRECTION = AVAILABLE_SNAKE_DIRECTIONS[Object.keys(AVAILABLE_SNAKE_DIRECTIONS)[getRandomNumber(0, Object.keys(AVAILABLE_SNAKE_DIRECTIONS).length)]];
@@ -217,9 +262,10 @@ if (LAYOUT === 'confetti') {
     if (!leftValue) leftValue = getRandomNumber(0, window.innerWidth);
 
     let circle = document.createElement('div');
+    let diameter = getCircleDiameter();
 
-    circle.style.width = '20px';
-    circle.style.height = '20px';
+    circle.style.width = `${ diameter }px`;
+    circle.style.height = `${ diameter }px`;
     circle.style.borderRadius = '50%';
     circle.style.position = 'absolute';
     circle.style.top = `${ topValue }px`;
@@ -239,10 +285,18 @@ if (LAYOUT === 'confetti') {
       if (IS_DIRECTION_DIFFERENT_ON_RESET) {
         SNAKE_DIRECTION = AVAILABLE_SNAKE_DIRECTIONS[Object.keys(AVAILABLE_SNAKE_DIRECTIONS)[getRandomNumber(0, Object.keys(AVAILABLE_SNAKE_DIRECTIONS).length)]];
       }
+
+      if (IS_DIRECTION_INCREMENTS_DIFFERENT_ON_RESET) {
+        DIRECTION_INCREMENTS = makeDirectionIncrements();
+      }
     };
 
     if (IS_DIRECTION_DIFFERENT_PER_CIRCLE) {
       SNAKE_DIRECTION = AVAILABLE_SNAKE_DIRECTIONS[Object.keys(AVAILABLE_SNAKE_DIRECTIONS)[getRandomNumber(0, Object.keys(AVAILABLE_SNAKE_DIRECTIONS).length)]];
+    }
+
+    if (IS_DIRECTION_INCREMENTS_DIFFERENT_PER_CIRCLE) {
+      DIRECTION_INCREMENTS = makeDirectionIncrements();
     }
 
     topValue = topValue + DIRECTION_INCREMENTS[SNAKE_DIRECTION].top;
