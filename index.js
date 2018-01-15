@@ -15,6 +15,14 @@ const AVAILABLE_SNAKE_DIRECTIONS = {
   TOP_LEFT: 'top_left',
 };
 
+const AVAILABLE_MIX_BLEND_MODES = [
+  'darken',
+  'lighten',
+  'multiply',
+  'screen',
+  'overlay',
+];
+
 const getRandomNumber = (min, max) => Math.floor(Math.random() * max) + min;
 
 const makeNumberRandomlyNegative = (number) => {
@@ -178,6 +186,8 @@ document.getElementById('lighten-layer').style.backgroundColor = getRandomRgbCol
 
 let createCircle;
 
+const IS_MARKMAKING_PRESENT = Math.random() < 0.5;
+
 if (LAYOUT === 'confetti') {
   createCircle = () => {
     let circle = document.createElement('div');
@@ -190,6 +200,13 @@ if (LAYOUT === 'confetti') {
     circle.style.top = `${ getRandomNumber(0, window.innerHeight) }px`;
     circle.style.left = `${ getRandomNumber(0, window.innerWidth) }px`;
     circle.style.backgroundColor = colors[getRandomNumber(0, colors.length - 1)];
+
+    if (IS_MARKMAKING_PRESENT) {
+      circle.style.backgroundImage = `url('./line${ getRandomNumber(1, 3) }.jpg')`
+      circle.style.backgroundSize = '100% 100%';
+      circle.style.backgroundBlendMode = 'multiply';
+      circle.style.transform = `rotate(${ getRandomNumber(0, 360) }deg)`;
+    }
 
     return circle;
   }
@@ -232,6 +249,13 @@ if (LAYOUT === 'confetti') {
     circle.style.borderRadius = '50%';
     circle.style.backgroundColor = colors[getRandomNumber(0, colors.length - 1)];
 
+    if (IS_MARKMAKING_PRESENT) {
+      circle.style.backgroundImage = `url('./line${ getRandomNumber(1, 3) }.jpg')`
+      circle.style.backgroundSize = '100% 100%';
+      circle.style.backgroundBlendMode = 'multiply';
+      circle.style.transform = `rotate(${ getRandomNumber(0, 360) }deg)`;
+    }
+
     circleContainer.appendChild(circle);
 
     return circleContainer;
@@ -271,6 +295,13 @@ if (LAYOUT === 'confetti') {
     circle.style.top = `${ topValue }px`;
     circle.style.left = `${ leftValue }px`;
     circle.style.backgroundColor = colors[getRandomNumber(0, colors.length - 1)];
+
+    if (IS_MARKMAKING_PRESENT) {
+      circle.style.backgroundImage = `url('./line${ getRandomNumber(1, 3) }.jpg')`
+      circle.style.backgroundSize = '100% 100%';
+      circle.style.backgroundBlendMode = 'multiply';
+      circle.style.transform = `rotate(${ getRandomNumber(0, 360) }deg)`;
+    }
 
     // if it hits the window edges in any location, find a new random starting point for everything
     if (
