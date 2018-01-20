@@ -153,6 +153,34 @@ if (IS_CIRCLE_COLOR_INCREMENTAL) {
   }
 }
 
+let IS_DOTS_BACKGROUND = Math.random() < 0.5;
+
+if (!IS_DOTS_BACKGROUND) {
+  document.getElementById('dots-dark-background').remove();
+  document.getElementById('dots-light-background').remove();
+} else {
+  let IS_DOTS_BACKGROUND_DARK = Math.random() < 0.5;
+
+  if (IS_DOTS_BACKGROUND_DARK) {
+    document.getElementById('dots-light-background').remove();
+  } else {
+    document.getElementById('dots-dark-background').remove();
+  }
+}
+
+let IS_CIRCLE_GLOW = Math.random() < 0.5;
+let IS_CIRCLE_GLOW_PER_CIRCLE;
+
+if (IS_CIRCLE_GLOW) {
+  IS_CIRCLE_GLOW_PER_CIRCLE = Math.random() < 0.5;
+} else {
+  IS_CIRCLE_GLOW_PER_CIRCLE = false;
+}
+
+const CIRCLE_GLOW_OPACITY = getRandomNumber(1, 10) / 10;
+let IS_CIRCLE_GLOW_OPACITY_PER_CIRCLE = Math.random() < 0.5;
+
+
 let colors;
 let rValue;
 let gValue;
@@ -180,32 +208,50 @@ if (IS_CIRCLE_COLOR_INCREMENTAL) {
   });
 }
 
-document.body.style.backgroundColor = getRandomRgbColour();
+document.getElementById('background').style.backgroundColor = getRandomRgbColour();
 document.getElementById('colour-layer').style.backgroundColor = getRandomRgbColour();
 document.getElementById('lighten-layer').style.backgroundColor = getRandomRgbColour();
 
 let createCircle;
 
 const IS_MARKMAKING_PRESENT = Math.random() < 0.5;
+let IS_DOTS_DARK = Math.random() < 0.5;
+const IS_DOTS_DARK_CHECK_PER_CIRCLE = Math.random() < 0.5;
 
 if (LAYOUT === 'confetti') {
   createCircle = () => {
+    if (IS_DOTS_DARK_CHECK_PER_CIRCLE) IS_DOTS_DARK = Math.random() < 0.5;
+    if (IS_CIRCLE_GLOW_PER_CIRCLE) IS_CIRCLE_GLOW = Math.random() < 0.5;
+
     let circle = document.createElement('div');
     let diameter = getCircleDiameter();
+    let color = colors[getRandomNumber(0, colors.length - 1)];
 
     circle.style.width = `${ diameter }px`;
     circle.style.height = `${ diameter }px`;
     circle.style.borderRadius = '50%';
+    circle.style.zIndex = '2';
     circle.style.position = 'absolute';
     circle.style.top = `${ getRandomNumber(0, window.innerHeight) }px`;
     circle.style.left = `${ getRandomNumber(0, window.innerWidth) }px`;
-    circle.style.backgroundColor = colors[getRandomNumber(0, colors.length - 1)];
+    circle.style.backgroundColor = color;
+
+    if (IS_CIRCLE_GLOW) {
+      let boxShadowColor = color
+        .replace('rgb', 'rgba')
+        .replace(
+          ')',
+          `,${ IS_CIRCLE_GLOW_OPACITY_PER_CIRCLE ? getRandomNumber(5, 10) / 10 : CIRCLE_GLOW_OPACITY })`
+        );
+
+      circle.style.boxShadow = `0 0 ${ getRandomNumber(150, 400) }px 0 ${ boxShadowColor }`;
+    }
 
     if (IS_MARKMAKING_PRESENT) {
-      circle.style.backgroundImage = `url('./line${ getRandomNumber(1, 3) }.jpg')`
-      circle.style.backgroundSize = '100% 100%';
-      circle.style.backgroundBlendMode = 'multiply';
-      circle.style.transform = `rotate(${ getRandomNumber(0, 360) }deg)`;
+      circle.style.backgroundImage = `url('./dots-${ IS_DOTS_DARK ? 'dark' : 'light' }-transparent.png')`
+      circle.style.backgroundSize = '300px auto';
+      circle.style.backgroundPosition = `${ getRandomNumber(0, 100) }% ${ getRandomNumber(0, 100) }%`;
+      circle.style.backgroundBlendMode = 'color-burn';
     }
 
     return circle;
@@ -216,20 +262,24 @@ if (LAYOUT === 'confetti') {
   });
 
   circles.map((circle) => {
-    document.body.appendChild(circle);
+    document.getElementById('background').appendChild(circle);
   })
 } else if (LAYOUT === 'grid') {
   let width = window.innerWidth / Math.sqrt(TOTAL_CIRCLES);
   let height = window.innerHeight / Math.sqrt(TOTAL_CIRCLES);
-  let color;
 
   const IS_RANDOM_OFFSET_PER_CIRCLE = Math.random() < 0.5;
 
   createCircle = () => {
+    if (IS_DOTS_DARK_CHECK_PER_CIRCLE) IS_DOTS_DARK = Math.random() < 0.5;
+    if (IS_CIRCLE_GLOW_PER_CIRCLE) IS_CIRCLE_GLOW = Math.random() < 0.5;
+
     let circleContainer = document.createElement('div');
     let circle = document.createElement('div');
+    let color = colors[getRandomNumber(0, colors.length - 1)];
 
     circleContainer.style.width = `${ width }px`;
+    circleContainer.style.zIndex = '2';
     circleContainer.style.height = `${ height }px`;
     circleContainer.style.display = 'flex';
     circleContainer.style.justifyContent = 'center';
@@ -247,13 +297,24 @@ if (LAYOUT === 'confetti') {
     circle.style.height = `${ diameter }px`;
     circle.style.flex = 'none';
     circle.style.borderRadius = '50%';
-    circle.style.backgroundColor = colors[getRandomNumber(0, colors.length - 1)];
+    circle.style.backgroundColor = color;
+
+    if (IS_CIRCLE_GLOW) {
+      let boxShadowColor = color
+        .replace('rgb', 'rgba')
+        .replace(
+          ')',
+          `,${ IS_CIRCLE_GLOW_OPACITY_PER_CIRCLE ? getRandomNumber(5, 10) / 10 : CIRCLE_GLOW_OPACITY })`
+        );
+
+      circle.style.boxShadow = `0 0 ${ getRandomNumber(150, 400) }px 0 ${ boxShadowColor }`;
+    }
 
     if (IS_MARKMAKING_PRESENT) {
-      circle.style.backgroundImage = `url('./line${ getRandomNumber(1, 3) }.jpg')`
-      circle.style.backgroundSize = '100% 100%';
-      circle.style.backgroundBlendMode = 'multiply';
-      circle.style.transform = `rotate(${ getRandomNumber(0, 360) }deg)`;
+      circle.style.backgroundImage = `url('./dots-${ IS_DOTS_DARK ? 'dark' : 'light' }-transparent.png')`
+      circle.style.backgroundSize = '300px auto';
+      circle.style.backgroundPosition = `${ getRandomNumber(0, 100) }% ${ getRandomNumber(0, 100) }%`;
+      circle.style.backgroundBlendMode = 'color-burn';
     }
 
     circleContainer.appendChild(circle);
@@ -266,7 +327,7 @@ if (LAYOUT === 'confetti') {
   });
 
   circles.map((circle) => {
-    document.body.appendChild(circle);
+    document.getElementById('background').appendChild(circle);
   })
 } else if (LAYOUT === 'snake') {
 
@@ -282,25 +343,41 @@ if (LAYOUT === 'confetti') {
   let leftValue;
 
   createCircle = () => {
+    if (IS_DOTS_DARK_CHECK_PER_CIRCLE) IS_DOTS_DARK = Math.random() < 0.5;
+    if (IS_CIRCLE_GLOW_PER_CIRCLE) IS_CIRCLE_GLOW = Math.random() < 0.5;
+
     if (!topValue) topValue = getRandomNumber(0, window.innerHeight);
     if (!leftValue) leftValue = getRandomNumber(0, window.innerWidth);
 
     let circle = document.createElement('div');
     let diameter = getCircleDiameter();
+    let color = colors[getRandomNumber(0, colors.length - 1)];
 
     circle.style.width = `${ diameter }px`;
     circle.style.height = `${ diameter }px`;
+    circle.style.zIndex = '2';
     circle.style.borderRadius = '50%';
     circle.style.position = 'absolute';
     circle.style.top = `${ topValue }px`;
     circle.style.left = `${ leftValue }px`;
-    circle.style.backgroundColor = colors[getRandomNumber(0, colors.length - 1)];
+    circle.style.backgroundColor = color;
+
+    if (IS_CIRCLE_GLOW) {
+      let boxShadowColor = color
+        .replace('rgb', 'rgba')
+        .replace(
+          ')',
+          `,${ IS_CIRCLE_GLOW_OPACITY_PER_CIRCLE ? getRandomNumber(5, 10) / 10 : CIRCLE_GLOW_OPACITY })`
+        );
+
+      circle.style.boxShadow = `0 0 ${ getRandomNumber(150, 400) }px 0 ${ boxShadowColor }`;
+    }
 
     if (IS_MARKMAKING_PRESENT) {
-      circle.style.backgroundImage = `url('./line${ getRandomNumber(1, 3) }.jpg')`
-      circle.style.backgroundSize = '100% 100%';
-      circle.style.backgroundBlendMode = 'multiply';
-      circle.style.transform = `rotate(${ getRandomNumber(0, 360) }deg)`;
+      circle.style.backgroundImage = `url('./dots-${ IS_DOTS_DARK ? 'dark' : 'light' }-transparent.png')`
+      circle.style.backgroundSize = '300px auto';
+      circle.style.backgroundPosition = `${ getRandomNumber(0, 100) }% ${ getRandomNumber(0, 100) }%`;
+      circle.style.backgroundBlendMode = 'color-burn';
     }
 
     // if it hits the window edges in any location, find a new random starting point for everything
@@ -341,6 +418,6 @@ if (LAYOUT === 'confetti') {
   });
 
   circles.map((circle) => {
-    document.body.appendChild(circle);
+    document.getElementById('background').appendChild(circle);
   })
 }
