@@ -23,7 +23,7 @@ const AVAILABLE_MIX_BLEND_MODES = [
   'overlay',
 ];
 
-const getRandomNumber = (min, max) => Math.floor(Math.random() * max) + min;
+const getRandomNumber = (min, max) => Math.floor(Math.random() * (max - min) + min);
 
 const makeNumberRandomlyNegative = (number) => {
   if (Math.random() < 0.5) return -number;
@@ -31,12 +31,13 @@ const makeNumberRandomlyNegative = (number) => {
 };
 
 let SNAKE_ANGLE = getRandomNumber(10, 50);
-
 let CIRCLE_DIAMETER = getRandomNumber(20, 50);
 const CIRCLE_DIAMETER_MAX = getRandomNumber(20, 50);
 const IS_CIRCLE_DIAMETER_MAX_RANDOM_PER_DIRECTION = Math.random() < 0.5;
-
 const IS_CIRCLE_DIAMETER_RANDOM_PER_CIRCLE = Math.random() < 0.5;
+const IS_SNAKE_ANGLE_RANDOM_PER_DIRECTION = Math.random() < 0.5;
+const IS_SNAKE_ANGLE_MAX_RANDOM_PER_DIRECTION = Math.random() < 0.5;
+const SNAKE_ANGLE_MAX = getRandomNumber(10, 50);
 
 const getCircleDiameter = () => {
   if (IS_CIRCLE_DIAMETER_RANDOM_PER_CIRCLE) {
@@ -48,11 +49,6 @@ const getCircleDiameter = () => {
   };
   return CIRCLE_DIAMETER;
 }
-
-const IS_SNAKE_ANGLE_RANDOM_PER_DIRECTION = Math.random() < 0.5;
-const IS_SNAKE_ANGLE_MAX_RANDOM_PER_DIRECTION = Math.random() < 0.5;
-
-const SNAKE_ANGLE_MAX = getRandomNumber(10, 50);
 
 const getSnakeAngle = () => {
   if (IS_SNAKE_ANGLE_RANDOM_PER_DIRECTION) {
@@ -169,13 +165,13 @@ if (!IS_DOTS_BACKGROUND) {
   }
 }
 
-const CIRCLE_GLOW_MIN_OPACITY = 0; // out of 10
-const CIRCLE_GLOW_MAX_OPACITY = 8; // out of 10
+const CIRCLE_GLOW_MIN_OPACITY = 2; // out of 10
+const CIRCLE_GLOW_MAX_OPACITY = 6; // out of 10
 const CIRCLE_GLOW_OPACITY = getRandomNumber(CIRCLE_GLOW_MIN_OPACITY, CIRCLE_GLOW_MAX_OPACITY) / 10;
 let IS_CIRCLE_GLOW_OPACITY_PER_CIRCLE = Math.random() < 0.5;
 
-const BOX_SHADOW_MIN_BLUR = 150;
-const BOX_SHADOW_MAX_BLUR = 400;
+const BOX_SHADOW_MIN_BLUR = 100;
+const BOX_SHADOW_MAX_BLUR = 200;
 
 let colors;
 let rValue;
@@ -227,8 +223,8 @@ if (LAYOUT === 'confetti') {
     circle.style.borderRadius = '50%';
     circle.style.zIndex = '2';
     circle.style.position = 'absolute';
-    circle.style.top = `${ getRandomNumber(0, window.innerHeight) }px`;
-    circle.style.left = `${ getRandomNumber(0, window.innerWidth) }px`;
+    circle.style.top = `${ getRandomNumber(0 - diameter, window.innerHeight) }px`;
+    circle.style.left = `${ getRandomNumber(0 - diameter, window.innerWidth) }px`;
     circle.style.backgroundColor = color;
 
     let boxShadowColor = color
@@ -336,11 +332,12 @@ if (LAYOUT === 'confetti') {
   createCircle = () => {
     if (IS_DOTS_DARK_CHECK_PER_CIRCLE) IS_DOTS_DARK = Math.random() < 0.5;
 
-    if (!topValue) topValue = getRandomNumber(0, window.innerHeight);
-    if (!leftValue) leftValue = getRandomNumber(0, window.innerWidth);
+    let diameter = getCircleDiameter();
+
+    if (!topValue) topValue = getRandomNumber(0 - diameter, window.innerHeight);
+    if (!leftValue) leftValue = getRandomNumber(0 - diameter, window.innerWidth);
 
     let circle = document.createElement('div');
-    let diameter = getCircleDiameter();
     let color = colors[getRandomNumber(0, colors.length - 1)];
 
     circle.style.width = `${ diameter }px`;
