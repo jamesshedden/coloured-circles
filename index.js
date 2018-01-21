@@ -67,7 +67,6 @@ const getSnakeAngle = () => {
 }
 
 const makeDirectionIncrements = () => {
-  console.log('makeDirectionIncrements()');
   return {
     [AVAILABLE_SNAKE_DIRECTIONS.TOP]: {
       top: getSnakeAngle(),
@@ -130,8 +129,10 @@ if (LAYOUT === 'grid') {
   TOTAL_CIRCLES = getRandomNumber(50, 500);
 }
 
-const getRandomRgbColour = () => {
-  return `rgb(${ getRandomNumber(0, 255) }, ${ getRandomNumber(0, 255) }, ${ getRandomNumber(0, 255) })`;
+const getRandomRgbColour = (min, max) => {
+  min = min ? min : 0;
+  max = max ? max : 255;
+  return `rgb(${ getRandomNumber(min, max) }, ${ getRandomNumber(min, max) }, ${ getRandomNumber(min, max) })`;
 }
 
 let IS_CIRCLE_COLOR_INCREMENTAL = Math.random() < 0.5;
@@ -168,18 +169,13 @@ if (!IS_DOTS_BACKGROUND) {
   }
 }
 
-let IS_CIRCLE_GLOW = Math.random() < 0.5;
-let IS_CIRCLE_GLOW_PER_CIRCLE;
-
-if (IS_CIRCLE_GLOW) {
-  IS_CIRCLE_GLOW_PER_CIRCLE = Math.random() < 0.5;
-} else {
-  IS_CIRCLE_GLOW_PER_CIRCLE = false;
-}
-
-const CIRCLE_GLOW_OPACITY = getRandomNumber(1, 10) / 10;
+const CIRCLE_GLOW_MIN_OPACITY = 0; // out of 10
+const CIRCLE_GLOW_MAX_OPACITY = 8; // out of 10
+const CIRCLE_GLOW_OPACITY = getRandomNumber(CIRCLE_GLOW_MIN_OPACITY, CIRCLE_GLOW_MAX_OPACITY) / 10;
 let IS_CIRCLE_GLOW_OPACITY_PER_CIRCLE = Math.random() < 0.5;
 
+const BOX_SHADOW_MIN_BLUR = 150;
+const BOX_SHADOW_MAX_BLUR = 400;
 
 let colors;
 let rValue;
@@ -208,7 +204,7 @@ if (IS_CIRCLE_COLOR_INCREMENTAL) {
   });
 }
 
-document.getElementById('background').style.backgroundColor = getRandomRgbColour();
+document.getElementById('background').style.backgroundColor = getRandomRgbColour(50, 175);
 document.getElementById('colour-layer').style.backgroundColor = getRandomRgbColour();
 document.getElementById('lighten-layer').style.backgroundColor = getRandomRgbColour();
 
@@ -221,7 +217,6 @@ const IS_DOTS_DARK_CHECK_PER_CIRCLE = Math.random() < 0.5;
 if (LAYOUT === 'confetti') {
   createCircle = () => {
     if (IS_DOTS_DARK_CHECK_PER_CIRCLE) IS_DOTS_DARK = Math.random() < 0.5;
-    if (IS_CIRCLE_GLOW_PER_CIRCLE) IS_CIRCLE_GLOW = Math.random() < 0.5;
 
     let circle = document.createElement('div');
     let diameter = getCircleDiameter();
@@ -236,22 +231,21 @@ if (LAYOUT === 'confetti') {
     circle.style.left = `${ getRandomNumber(0, window.innerWidth) }px`;
     circle.style.backgroundColor = color;
 
-    if (IS_CIRCLE_GLOW) {
-      let boxShadowColor = color
-        .replace('rgb', 'rgba')
-        .replace(
-          ')',
-          `,${ IS_CIRCLE_GLOW_OPACITY_PER_CIRCLE ? getRandomNumber(5, 10) / 10 : CIRCLE_GLOW_OPACITY })`
-        );
+    let boxShadowColor = color
+      .replace('rgb', 'rgba')
+      .replace(
+        ')',
+        `,${ IS_CIRCLE_GLOW_OPACITY_PER_CIRCLE ? getRandomNumber(CIRCLE_GLOW_MIN_OPACITY, CIRCLE_GLOW_MAX_OPACITY) / 10 : CIRCLE_GLOW_OPACITY })`
+      );
 
-      circle.style.boxShadow = `0 0 ${ getRandomNumber(150, 400) }px 0 ${ boxShadowColor }`;
-    }
+    circle.style.boxShadow = `0 0 ${ getRandomNumber(BOX_SHADOW_MIN_BLUR, BOX_SHADOW_MAX_BLUR) }px 0 ${ boxShadowColor }`;
+
 
     if (IS_MARKMAKING_PRESENT) {
       circle.style.backgroundImage = `url('./dots-${ IS_DOTS_DARK ? 'dark' : 'light' }-transparent.png')`
       circle.style.backgroundSize = '300px auto';
       circle.style.backgroundPosition = `${ getRandomNumber(0, 100) }% ${ getRandomNumber(0, 100) }%`;
-      circle.style.backgroundBlendMode = 'color-burn';
+      circle.style.backgroundBlendMode = IS_DOTS_DARK ? 'color-dodge' : 'color-burn';
     }
 
     return circle;
@@ -272,7 +266,6 @@ if (LAYOUT === 'confetti') {
 
   createCircle = () => {
     if (IS_DOTS_DARK_CHECK_PER_CIRCLE) IS_DOTS_DARK = Math.random() < 0.5;
-    if (IS_CIRCLE_GLOW_PER_CIRCLE) IS_CIRCLE_GLOW = Math.random() < 0.5;
 
     let circleContainer = document.createElement('div');
     let circle = document.createElement('div');
@@ -299,22 +292,20 @@ if (LAYOUT === 'confetti') {
     circle.style.borderRadius = '50%';
     circle.style.backgroundColor = color;
 
-    if (IS_CIRCLE_GLOW) {
-      let boxShadowColor = color
-        .replace('rgb', 'rgba')
-        .replace(
-          ')',
-          `,${ IS_CIRCLE_GLOW_OPACITY_PER_CIRCLE ? getRandomNumber(5, 10) / 10 : CIRCLE_GLOW_OPACITY })`
-        );
+    let boxShadowColor = color
+      .replace('rgb', 'rgba')
+      .replace(
+        ')',
+        `,${ IS_CIRCLE_GLOW_OPACITY_PER_CIRCLE ? getRandomNumber(CIRCLE_GLOW_MIN_OPACITY, CIRCLE_GLOW_MAX_OPACITY) / 10 : CIRCLE_GLOW_OPACITY })`
+      );
 
-      circle.style.boxShadow = `0 0 ${ getRandomNumber(150, 400) }px 0 ${ boxShadowColor }`;
-    }
+    circle.style.boxShadow = `0 0 ${ getRandomNumber(BOX_SHADOW_MIN_BLUR, BOX_SHADOW_MAX_BLUR) }px 0 ${ boxShadowColor }`;
 
     if (IS_MARKMAKING_PRESENT) {
       circle.style.backgroundImage = `url('./dots-${ IS_DOTS_DARK ? 'dark' : 'light' }-transparent.png')`
       circle.style.backgroundSize = '300px auto';
       circle.style.backgroundPosition = `${ getRandomNumber(0, 100) }% ${ getRandomNumber(0, 100) }%`;
-      circle.style.backgroundBlendMode = 'color-burn';
+      circle.style.backgroundBlendMode = IS_DOTS_DARK ? 'color-dodge' : 'color-burn';
     }
 
     circleContainer.appendChild(circle);
@@ -344,7 +335,6 @@ if (LAYOUT === 'confetti') {
 
   createCircle = () => {
     if (IS_DOTS_DARK_CHECK_PER_CIRCLE) IS_DOTS_DARK = Math.random() < 0.5;
-    if (IS_CIRCLE_GLOW_PER_CIRCLE) IS_CIRCLE_GLOW = Math.random() < 0.5;
 
     if (!topValue) topValue = getRandomNumber(0, window.innerHeight);
     if (!leftValue) leftValue = getRandomNumber(0, window.innerWidth);
@@ -362,22 +352,20 @@ if (LAYOUT === 'confetti') {
     circle.style.left = `${ leftValue }px`;
     circle.style.backgroundColor = color;
 
-    if (IS_CIRCLE_GLOW) {
-      let boxShadowColor = color
-        .replace('rgb', 'rgba')
-        .replace(
-          ')',
-          `,${ IS_CIRCLE_GLOW_OPACITY_PER_CIRCLE ? getRandomNumber(5, 10) / 10 : CIRCLE_GLOW_OPACITY })`
-        );
+    let boxShadowColor = color
+      .replace('rgb', 'rgba')
+      .replace(
+        ')',
+        `,${ IS_CIRCLE_GLOW_OPACITY_PER_CIRCLE ? getRandomNumber(CIRCLE_GLOW_MIN_OPACITY, CIRCLE_GLOW_MAX_OPACITY) / 10 : CIRCLE_GLOW_OPACITY })`
+      );
 
-      circle.style.boxShadow = `0 0 ${ getRandomNumber(150, 400) }px 0 ${ boxShadowColor }`;
-    }
+    circle.style.boxShadow = `0 0 ${ getRandomNumber(BOX_SHADOW_MIN_BLUR, BOX_SHADOW_MAX_BLUR) }px 0 ${ boxShadowColor }`;
 
     if (IS_MARKMAKING_PRESENT) {
       circle.style.backgroundImage = `url('./dots-${ IS_DOTS_DARK ? 'dark' : 'light' }-transparent.png')`
       circle.style.backgroundSize = '300px auto';
       circle.style.backgroundPosition = `${ getRandomNumber(0, 100) }% ${ getRandomNumber(0, 100) }%`;
-      circle.style.backgroundBlendMode = 'color-burn';
+      circle.style.backgroundBlendMode = IS_DOTS_DARK ? 'color-dodge' : 'color-burn';
     }
 
     // if it hits the window edges in any location, find a new random starting point for everything
