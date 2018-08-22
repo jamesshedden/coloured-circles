@@ -2,7 +2,7 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon ./index.js --exec babel-node",
-    "build": "babel ./index.js -d ./lib",
+    "build": "./node_modules/.bin/babel ./index.js -d ./lib",
     "serve": "node ./lib/index.js",
     "run": "./script/run"
   },
@@ -15,5 +15,10 @@
     "selenium-webdriver": "^3.0.1",
     "shortid": "^2.2.8",
     "twit": "^2.2.9"
+  },
+  "devDependencies": {
+    "eslint": "^5.4.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.14.0"
   }
 }
