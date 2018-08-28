@@ -82,6 +82,15 @@ const getRandomRgbColour = (min, max) => {
   return `rgb(${getRandomNumber(min, max)}, ${getRandomNumber(min, max)}, ${getRandomNumber(min, max)})`;
 };
 
+const getRandomCircleDiameter = (
+  isCircleDiameterMaxRandomPerDirection,
+  circleDiameterMax,
+) => getRandomNumber(
+  20,
+  isCircleDiameterMaxRandomPerDirection
+    ? getRandomNumber(20, 50) : circleDiameterMax,
+);
+
 const getColors = (
   isCircleColourIncremental,
   minColorsTotal,
@@ -150,16 +159,30 @@ const config = {
   isCircleRValueIncremental,
   isCircleGValueIncremental,
   isCircleBValueIncremental,
+  maxGridCircleOffset: getRandomNumber(6, 50),
   isCircleDiameterMaxRandomPerDirection: randomTrueOrFalse(),
-  isCircleDiameterRandomPerCircle: randomTrueOrFalse(),
+
+  isDiameterChangeEnabled: randomTrueOrFalse(),
+  numberOfCirclesUntilDiameterChange: getRandomNumber(0, 20),
+  diameterGradualIncrementAmount: getRandomNumber(0, 5),
+  isDiameterChangeCircleNumberReset: randomTrueOrFalse(),
+
   isCircleGlowOpacityPerCircle: randomTrueOrFalse(),
   isDirectionDifferentOnReset: randomTrueOrFalse(),
-  isDirectionDifferentPerCircle: randomTrueOrFalse(),
+
+  numberOfCirclesUntilDirectionChange: getRandomNumber(0, 20),
+  isDirectionChangeCircleNumberReset: randomTrueOrFalse(),
+
   isDirectionIncrementsDifferentOnReset: randomTrueOrFalse(),
   isDirectionIncrementsDifferentPerCircle: randomTrueOrFalse(),
   isDotsBackground: randomTrueOrFalse(),
   isDotsBackgroundDark: randomTrueOrFalse(),
-  isRandomOffsetPerCircle: randomTrueOrFalse(),
+
+  isGridOffsetChangeEnabled: randomTrueOrFalse(),
+  numberOfCirclesUntilGridOffsetChange: getRandomNumber(0, 20),
+  offsetGradualIncrementAmount: getRandomNumber(2, 20),
+  isOffsetChangeCircleNumberReset: randomTrueOrFalse(),
+
   defaultIsDotsDark: randomTrueOrFalse(),
   isDotsDarkCheckPerCircle: randomTrueOrFalse(),
   isMarkmakingPresent: randomTrueOrFalse(),
@@ -171,18 +194,6 @@ const config = {
   defaultSnakeDirection: getSnakeDirection(),
   snakeAngleMax: getRandomNumber(10, 50),
   totalCircles: layout === 'grid' ? getRandomSquareNumber(50, 500) : getRandomNumber(50, 500),
-};
-
-const getCircleDiameter = () => {
-  if (config.isCircleDiameterRandomPerCircle) {
-    return getRandomNumber(
-      20,
-      config.isCircleDiameterMaxRandomPerDirection
-        ? getRandomNumber(20, 50) : config.circleDiameterMax,
-    );
-  }
-
-  return config.defaultCircleDiameter;
 };
 
 if (!config.isDotsBackground) {
@@ -201,12 +212,36 @@ document.getElementById('lighten-layer').style.backgroundColor = getRandomRgbCol
 let createCircle;
 
 if (config.layout === 'confetti') {
+  let circleDiameterCounter = 0;
+  let diameter = config.defaultCircleDiameter;
+  let numberOfCirclesUntilDiameterChange = config.numberOfCirclesUntilDiameterChange;
+
   createCircle = () => {
     const isDotsDark = config.isDotsDarkCheckPerCircle
       ? randomTrueOrFalse() : config.defaultIsDotsDark;
 
     const circle = document.createElement('div');
-    const diameter = getCircleDiameter();
+
+    if (config.isDiameterChangeEnabled) {
+      if (circleDiameterCounter < numberOfCirclesUntilDiameterChange) {
+        circleDiameterCounter += 1;
+
+        if (config.diameterGradualIncrementAmount) {
+          diameter += config.diameterGradualIncrementAmount;
+        }
+      } else {
+        diameter = getRandomCircleDiameter(
+          config.isCircleDiameterMaxRandomPerDirection, config.circleDiameterMax,
+        );
+
+        if (config.isDiameterChangeCircleNumberReset) {
+          numberOfCirclesUntilDiameterChange = getRandomNumber(0, 20);
+        }
+
+        circleDiameterCounter = 0;
+      }
+    }
+
     const color = config.colors[getRandomNumber(0, config.colors.length - 1)];
 
     circle.style.width = `${diameter}px`;
@@ -243,6 +278,13 @@ if (config.layout === 'confetti') {
 } else if (config.layout === 'grid') {
   const width = window.innerWidth / Math.sqrt(config.totalCircles);
   const height = window.innerHeight / Math.sqrt(config.totalCircles);
+  let circleOffsetCounter = 0;
+  let circleDiameterCounter = 0;
+  let diameter = config.defaultCircleDiameter;
+  let topOffset = config.isGridOffsetChangeEnabled ? makeNumberRandomlyNegative(getRandomNumber(1, config.maxGridCircleOffset)) : 0;
+  let leftOffset = config.isGridOffsetChangeEnabled ? makeNumberRandomlyNegative(getRandomNumber(1, config.maxGridCircleOffset)) : 0;
+  let numberOfCirclesUntilDiameterChange = config.numberOfCirclesUntilDiameterChange;
+  let numberOfCirclesUntilGridOffsetChange = config.numberOfCirclesUntilGridOffsetChange;
 
   createCircle = () => {
     const isDotsDark = config.isDotsDarkCheckPerCircle
@@ -259,13 +301,49 @@ if (config.layout === 'confetti') {
     circleContainer.style.justifyContent = 'center';
     circleContainer.style.alignItems = 'center';
 
-    if (config.isRandomOffsetPerCircle) {
-      circle.style.position = 'relative';
-      circle.style.top = `${makeNumberRandomlyNegative(getRandomNumber(1, 6))}px`;
-      circle.style.left = `${makeNumberRandomlyNegative(getRandomNumber(1, 6))}px`;
+    if (config.isGridOffsetChangeEnabled) {
+      if (circleOffsetCounter < numberOfCirclesUntilGridOffsetChange) {
+        circleOffsetCounter += 1;
+
+        if (config.offsetGradualIncrementAmount) {
+          topOffset += config.offsetGradualIncrementAmount;
+          leftOffset += config.offsetGradualIncrementAmount;
+        }
+      } else {
+        topOffset = makeNumberRandomlyNegative(getRandomNumber(1, config.maxGridCircleOffset));
+        leftOffset = makeNumberRandomlyNegative(getRandomNumber(1, config.maxGridCircleOffset));
+
+        if (config.isOffsetChangeCircleNumberReset) {
+          numberOfCirclesUntilGridOffsetChange = getRandomNumber(0, 20);
+        }
+
+        circleOffsetCounter = 0;
+      }
     }
 
-    const diameter = getCircleDiameter();
+    circle.style.position = 'relative';
+    circle.style.top = `${topOffset}px`;
+    circle.style.left = `${leftOffset}px`;
+
+    if (config.isDiameterChangeEnabled) {
+      if (circleDiameterCounter < numberOfCirclesUntilDiameterChange) {
+        circleDiameterCounter += 1;
+
+        if (config.diameterGradualIncrementAmount) {
+          diameter += config.diameterGradualIncrementAmount;
+        }
+      } else {
+        diameter = getRandomCircleDiameter(
+          config.isCircleDiameterMaxRandomPerDirection, config.circleDiameterMax,
+        );
+
+        if (config.isDiameterChangeCircleNumberReset) {
+          numberOfCirclesUntilDiameterChange = getRandomNumber(0, 20);
+        }
+
+        circleDiameterCounter = 0;
+      }
+    }
 
     circle.style.width = `${diameter}px`;
     circle.style.height = `${diameter}px`;
@@ -300,12 +378,36 @@ if (config.layout === 'confetti') {
 } else if (config.layout === 'snake') {
   let topValue;
   let leftValue;
+  let circleDirectionCounter = 0;
+  let circleDiameterCounter = 0;
+  let diameter = config.defaultCircleDiameter;
+  let snakeDirection = config.defaultSnakeDirection;
+  let numberOfCirclesUntilDirectionChange = config.numberOfCirclesUntilDirectionChange;
+  let numberOfCirclesUntilDiameterChange = config.numberOfCirclesUntilDiameterChange;
 
   createCircle = () => {
     const isDotsDark = config.isDotsDarkCheckPerCircle
       ? randomTrueOrFalse() : config.defaultIsDotsDark;
 
-    const diameter = getCircleDiameter();
+    if (config.isDiameterChangeEnabled) {
+      if (circleDiameterCounter < numberOfCirclesUntilDiameterChange) {
+        circleDiameterCounter += 1;
+
+        if (config.diameterGradualIncrementAmount) {
+          diameter += config.diameterGradualIncrementAmount;
+        }
+      } else {
+        diameter = getRandomCircleDiameter(
+          config.isCircleDiameterMaxRandomPerDirection, config.circleDiameterMax,
+        );
+
+        if (config.isDiameterChangeCircleNumberReset) {
+          numberOfCirclesUntilDiameterChange = getRandomNumber(0, 20);
+        }
+
+        circleDiameterCounter = 0;
+      }
+    }
 
     if (!topValue) topValue = getRandomNumber(0 - diameter, window.innerHeight);
     if (!leftValue) leftValue = getRandomNumber(0 - diameter, window.innerWidth);
@@ -342,8 +444,7 @@ if (config.layout === 'confetti') {
       circle.style.backgroundBlendMode = isDotsDark ? 'color-dodge' : 'color-burn';
     }
 
-    let snakeDirection; let
-      directionIncrements;
+    let directionIncrements;
 
     // if it hits the window edges in any location, find a new random starting point for everything
     if (
@@ -359,15 +460,26 @@ if (config.layout === 'confetti') {
         ? getSnakeDirection() : config.defaultSnakeDirection;
 
       directionIncrements = config.isDirectionIncrementsDifferentOnReset
-        ? makeDirectionIncrements(config.isSnakeAngleRandomPerDirection, config.snakeAngleMax)
+        ? makeDirectionIncrements(0, config.isSnakeAngleRandomPerDirection, config.snakeAngleMax)
         : config.defaultDirectionIncrements;
     }
 
-    snakeDirection = config.isDirectionDifferentPerCircle
-      ? getSnakeDirection() : config.defaultSnakeDirection;
+    if (numberOfCirclesUntilDirectionChange) {
+      if (circleDirectionCounter < numberOfCirclesUntilDirectionChange) {
+        circleDirectionCounter += 1;
+      } else {
+        snakeDirection = getSnakeDirection();
+
+        if (config.isDirectionChangeCircleNumberReset) {
+          numberOfCirclesUntilDirectionChange = getRandomNumber(0, 20);
+        }
+
+        circleDirectionCounter = 0;
+      }
+    }
 
     directionIncrements = config.isDirectionIncrementsDifferentPerCircle
-      ? makeDirectionIncrements(config.isSnakeAngleRandomPerDirection, config.snakeAngleMax)
+      ? makeDirectionIncrements(0, config.isSnakeAngleRandomPerDirection, config.snakeAngleMax)
       : config.defaultDirectionIncrements;
 
     topValue += directionIncrements[snakeDirection].top;
@@ -383,4 +495,4 @@ circles.forEach((circle) => {
   document.getElementById('background').appendChild(circle);
 });
 
-console.log('config:', config);
+// console.log('config:', config);
