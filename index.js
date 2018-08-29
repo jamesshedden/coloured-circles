@@ -607,4 +607,4 @@ circles.forEach((circle) => {
   document.getElementById('background').appendChild(circle);
 });
 
-console.log('config:', config);
+// console.log('config:', config);
