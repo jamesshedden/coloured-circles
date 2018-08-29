@@ -70,12 +70,6 @@ const makeDirectionIncrements = (snakeAngle, isSnakeAngleRandomPerDirection, sna
   },
 });
 
-const getSnakeDirection = () => AVAILABLE_SNAKE_DIRECTIONS[
-  Object.keys(AVAILABLE_SNAKE_DIRECTIONS)[
-    getRandomNumber(0, Object.keys(AVAILABLE_SNAKE_DIRECTIONS).length)
-  ]
-];
-
 const getRandomRgbColour = (min, max) => {
   min = min || 0;
   max = max || 255;
@@ -139,6 +133,17 @@ const isCircleRValueIncremental = randomTrueOrFalse();
 const isCircleGValueIncremental = randomTrueOrFalse();
 const isCircleBValueIncremental = randomTrueOrFalse();
 
+const allowedSnakeDirections = Object.keys(AVAILABLE_SNAKE_DIRECTIONS).slice(
+  0,
+  getRandomNumber(1, Object.keys(AVAILABLE_SNAKE_DIRECTIONS).length),
+);
+
+const getSnakeDirection = () => AVAILABLE_SNAKE_DIRECTIONS[
+  allowedSnakeDirections[
+    getRandomNumber(0, allowedSnakeDirections.length)
+  ]
+];
+
 const config = {
   boxShadowMaxBlur: 200,
   boxShadowMinBlur: 100,
@@ -167,6 +172,11 @@ const config = {
   diameterGradualIncrementAmount: getRandomNumber(0, 5),
   isDiameterChangeCircleNumberReset: randomTrueOrFalse(),
 
+  isOpacityChangeEnabled: randomTrueOrFalse(),
+  numberOfCirclesUntilOpacityChange: getRandomNumber(0, 20),
+  opacityGradualIncrementAmount: getRandomNumber(0, 0.05),
+  isOpacityChangeCircleNumberReset: randomTrueOrFalse(),
+
   isCircleGlowOpacityPerCircle: randomTrueOrFalse(),
   isDirectionDifferentOnReset: randomTrueOrFalse(),
 
@@ -193,6 +203,7 @@ const config = {
   layout,
   minColorsTotal,
   defaultSnakeAngle,
+  allowedSnakeDirections,
   defaultSnakeDirection: getSnakeDirection(),
   snakeAngleMax: getRandomNumber(10, 50),
   totalCircles: layout === 'grid' ? getRandomSquareNumber(50, 500) : getRandomNumber(50, 500),
@@ -217,6 +228,10 @@ if (config.layout === 'confetti') {
   let circleDiameterCounter = 0;
   let diameter = config.defaultCircleDiameter;
   let numberOfCirclesUntilDiameterChange = config.numberOfCirclesUntilDiameterChange;
+
+  let circleOpacityCounter = 0;
+  let opacity = 1;
+  let numberOfCirclesUntilOpacityChange = config.numberOfCirclesUntilOpacityChange;
 
   createCircle = () => {
     const isDotsDark = config.isDotsDarkCheckPerCircle
@@ -244,8 +259,27 @@ if (config.layout === 'confetti') {
       }
     }
 
+    if (config.isOpacityChangeEnabled) {
+      if (circleOpacityCounter < numberOfCirclesUntilOpacityChange) {
+        circleOpacityCounter += 1;
+
+        if (config.opacityGradualIncrementAmount) {
+          opacity -= config.opacityGradualIncrementAmount;
+        }
+      } else {
+        opacity = getRandomNumber(0, 100) / 100;
+
+        if (config.isOpacityChangeCircleNumberReset) {
+          numberOfCirclesUntilOpacityChange = getRandomNumber(0, 20);
+        }
+
+        circleOpacityCounter = 0;
+      }
+    }
+
     const color = config.colors[getRandomNumber(0, config.colors.length - 1)];
 
+    circle.style.opacity = opacity;
     circle.style.width = `${diameter}px`;
     circle.style.height = `${diameter}px`;
     circle.style.borderRadius = '50%';
@@ -280,13 +314,19 @@ if (config.layout === 'confetti') {
 } else if (config.layout === 'grid') {
   const width = window.innerWidth / Math.sqrt(config.totalCircles);
   const height = window.innerHeight / Math.sqrt(config.totalCircles);
-  let circleOffsetCounter = 0;
+
   let circleDiameterCounter = 0;
+  let numberOfCirclesUntilDiameterChange = config.numberOfCirclesUntilDiameterChange;
   let diameter = config.defaultCircleDiameter;
+
+  let circleOffsetCounter = 0;
+  let numberOfCirclesUntilGridOffsetChange = config.numberOfCirclesUntilGridOffsetChange;
   let topOffset = config.isGridOffsetChangeEnabled ? makeNumberRandomlyNegative(getRandomNumber(1, config.maxGridCircleOffset)) : 0;
   let leftOffset = config.isGridOffsetChangeEnabled ? makeNumberRandomlyNegative(getRandomNumber(1, config.maxGridCircleOffset)) : 0;
-  let numberOfCirclesUntilDiameterChange = config.numberOfCirclesUntilDiameterChange;
-  let numberOfCirclesUntilGridOffsetChange = config.numberOfCirclesUntilGridOffsetChange;
+
+  let circleOpacityCounter = 0;
+  let opacity = 1;
+  let numberOfCirclesUntilOpacityChange = config.numberOfCirclesUntilOpacityChange;
 
   createCircle = () => {
     const isDotsDark = config.isDotsDarkCheckPerCircle
@@ -323,6 +363,24 @@ if (config.layout === 'confetti') {
       }
     }
 
+    if (config.isOpacityChangeEnabled) {
+      if (circleOpacityCounter < numberOfCirclesUntilOpacityChange) {
+        circleOpacityCounter += 1;
+
+        if (config.opacityGradualIncrementAmount) {
+          opacity -= config.opacityGradualIncrementAmount;
+        }
+      } else {
+        opacity = getRandomNumber(0, 100) / 100;
+
+        if (config.isOpacityChangeCircleNumberReset) {
+          numberOfCirclesUntilOpacityChange = getRandomNumber(0, 20);
+        }
+
+        circleOpacityCounter = 0;
+      }
+    }
+
     circle.style.position = 'relative';
     circle.style.top = `${topOffset}px`;
     circle.style.left = `${leftOffset}px`;
@@ -347,6 +405,7 @@ if (config.layout === 'confetti') {
       }
     }
 
+    circle.style.opacity = opacity;
     circle.style.width = `${diameter}px`;
     circle.style.height = `${diameter}px`;
     circle.style.flex = 'none';
@@ -380,17 +439,23 @@ if (config.layout === 'confetti') {
 } else if (config.layout === 'snake') {
   let topValue;
   let leftValue;
+  let snakeDirection = config.defaultSnakeDirection;
+
   let circleDirectionCounter = 0;
+  let numberOfCirclesUntilDirectionChange = config.numberOfCirclesUntilDirectionChange;
+
   let circleDiameterCounter = 0;
   let diameter = config.defaultCircleDiameter;
-  let snakeDirection = config.defaultSnakeDirection;
-  let numberOfCirclesUntilDirectionChange = config.numberOfCirclesUntilDirectionChange;
   let numberOfCirclesUntilDiameterChange = config.numberOfCirclesUntilDiameterChange;
 
   let circleOffsetCounter = 0;
   let topOffset = config.isGridOffsetChangeEnabled ? makeNumberRandomlyNegative(getRandomNumber(1, config.maxGridCircleOffset)) : 0;
   let leftOffset = config.isGridOffsetChangeEnabled ? makeNumberRandomlyNegative(getRandomNumber(1, config.maxGridCircleOffset)) : 0;
   let numberOfCirclesUntilGridOffsetChange = config.numberOfCirclesUntilGridOffsetChange;
+
+  let circleOpacityCounter = 0;
+  let opacity = 1;
+  let numberOfCirclesUntilOpacityChange = config.numberOfCirclesUntilOpacityChange;
 
   createCircle = () => {
     const isDotsDark = config.isDotsDarkCheckPerCircle
@@ -436,6 +501,23 @@ if (config.layout === 'confetti') {
       }
     }
 
+    if (config.isOpacityChangeEnabled) {
+      if (circleOpacityCounter < numberOfCirclesUntilOpacityChange) {
+        circleOpacityCounter += 1;
+
+        if (config.opacityGradualIncrementAmount) {
+          opacity -= config.opacityGradualIncrementAmount;
+        }
+      } else {
+        opacity = getRandomNumber(0, 100) / 100;
+
+        if (config.isOpacityChangeCircleNumberReset) {
+          numberOfCirclesUntilOpacityChange = getRandomNumber(0, 20);
+        }
+
+        circleOpacityCounter = 0;
+      }
+    }
 
     if (!topValue) topValue = getRandomNumber(0 - diameter, window.innerHeight);
     if (!leftValue) leftValue = getRandomNumber(0 - diameter, window.innerWidth);
@@ -443,6 +525,7 @@ if (config.layout === 'confetti') {
     const circle = document.createElement('div');
     const color = config.colors[getRandomNumber(0, config.colors.length - 1)];
 
+    circle.style.opacity = opacity;
     circle.style.transform = `translateY(${topOffset}px) translateX(${leftOffset}px)`;
     circle.style.width = `${diameter}px`;
     circle.style.height = `${diameter}px`;
@@ -524,4 +607,4 @@ circles.forEach((circle) => {
   document.getElementById('background').appendChild(circle);
 });
 
-// console.log('config:', config);
+console.log('config:', config);
