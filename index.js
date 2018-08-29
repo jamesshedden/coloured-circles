@@ -178,6 +178,8 @@ const config = {
   isDotsBackground: randomTrueOrFalse(),
   isDotsBackgroundDark: randomTrueOrFalse(),
 
+  // Now also used by 'snake' layout, may want to rename away from 'grid' or create new setting.
+  // Maybe have different config objects per layout, so it's clear what layouts use what config?
   isGridOffsetChangeEnabled: randomTrueOrFalse(),
   numberOfCirclesUntilGridOffsetChange: getRandomNumber(0, 20),
   offsetGradualIncrementAmount: getRandomNumber(2, 20),
@@ -385,6 +387,11 @@ if (config.layout === 'confetti') {
   let numberOfCirclesUntilDirectionChange = config.numberOfCirclesUntilDirectionChange;
   let numberOfCirclesUntilDiameterChange = config.numberOfCirclesUntilDiameterChange;
 
+  let circleOffsetCounter = 0;
+  let topOffset = config.isGridOffsetChangeEnabled ? makeNumberRandomlyNegative(getRandomNumber(1, config.maxGridCircleOffset)) : 0;
+  let leftOffset = config.isGridOffsetChangeEnabled ? makeNumberRandomlyNegative(getRandomNumber(1, config.maxGridCircleOffset)) : 0;
+  let numberOfCirclesUntilGridOffsetChange = config.numberOfCirclesUntilGridOffsetChange;
+
   createCircle = () => {
     const isDotsDark = config.isDotsDarkCheckPerCircle
       ? randomTrueOrFalse() : config.defaultIsDotsDark;
@@ -409,12 +416,34 @@ if (config.layout === 'confetti') {
       }
     }
 
+    if (config.isGridOffsetChangeEnabled) {
+      if (circleOffsetCounter < numberOfCirclesUntilGridOffsetChange) {
+        circleOffsetCounter += 1;
+
+        if (config.offsetGradualIncrementAmount) {
+          topOffset += config.offsetGradualIncrementAmount;
+          leftOffset += config.offsetGradualIncrementAmount;
+        }
+      } else {
+        topOffset = makeNumberRandomlyNegative(getRandomNumber(1, config.maxGridCircleOffset));
+        leftOffset = makeNumberRandomlyNegative(getRandomNumber(1, config.maxGridCircleOffset));
+
+        if (config.isOffsetChangeCircleNumberReset) {
+          numberOfCirclesUntilGridOffsetChange = getRandomNumber(0, 20);
+        }
+
+        circleOffsetCounter = 0;
+      }
+    }
+
+
     if (!topValue) topValue = getRandomNumber(0 - diameter, window.innerHeight);
     if (!leftValue) leftValue = getRandomNumber(0 - diameter, window.innerWidth);
 
     const circle = document.createElement('div');
     const color = config.colors[getRandomNumber(0, config.colors.length - 1)];
 
+    circle.style.transform = `translateY(${topOffset}px) translateX(${leftOffset}px)`;
     circle.style.width = `${diameter}px`;
     circle.style.height = `${diameter}px`;
     circle.style.zIndex = '2';
