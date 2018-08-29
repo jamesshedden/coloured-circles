@@ -70,7 +70,7 @@ const makeDirectionIncrements = (snakeAngle, isSnakeAngleRandomPerDirection, sna
   },
 });
 
-const getRandomRgbColour = (min, max) => {
+const getRandomRgbColor = (min, max) => {
   min = min || 0;
   max = max || 255;
   return `rgb(${getRandomNumber(min, max)}, ${getRandomNumber(min, max)}, ${getRandomNumber(min, max)})`;
@@ -86,13 +86,13 @@ const getRandomCircleDiameter = (
 );
 
 const getColors = (
-  isCircleColourIncremental,
+  isCircleColorIncremental,
   minColorsTotal,
   isCircleRValueIncremental,
   isCircleGValueIncremental,
   isCircleBValueIncremental,
 ) => {
-  if (isCircleColourIncremental) {
+  if (isCircleColorIncremental) {
     let rValue;
     let gValue;
     let bValue;
@@ -120,29 +120,53 @@ const getColors = (
     });
   }
 
-  return [...Array(getRandomNumber(minColorsTotal, 50))].map(() => getRandomRgbColour());
+  return [...Array(getRandomNumber(minColorsTotal, 50))].map(() => getRandomRgbColor());
 };
 
 const circleGlowMinOpacity = 2; // out of 1
 const circleGlowMaxOpacity = 7; // out of 1
 const layout = AVAILABLE_LAYOUTS[getRandomNumber(0, AVAILABLE_LAYOUTS.length)];
 const defaultSnakeAngle = getRandomNumber(10, 50);
-const isCircleColourIncremental = randomTrueOrFalse();
+const isCircleColorIncremental = randomTrueOrFalse();
 const minColorsTotal = 3;
 const isCircleRValueIncremental = randomTrueOrFalse();
 const isCircleGValueIncremental = randomTrueOrFalse();
 const isCircleBValueIncremental = randomTrueOrFalse();
 
+const colors = getColors(
+  isCircleColorIncremental,
+  minColorsTotal,
+  isCircleRValueIncremental,
+  isCircleGValueIncremental,
+  isCircleBValueIncremental,
+);
+
+const getRandomColorFromColors = () => colors[getRandomNumber(0, colors.length - 1)];
+
 const allowedSnakeDirections = Object.keys(AVAILABLE_SNAKE_DIRECTIONS).slice(
   0,
-  getRandomNumber(1, Object.keys(AVAILABLE_SNAKE_DIRECTIONS).length),
+  getRandomNumber(1, Object.keys(AVAILABLE_SNAKE_DIRECTIONS).length - 1),
 );
 
 const getSnakeDirection = () => AVAILABLE_SNAKE_DIRECTIONS[
   allowedSnakeDirections[
-    getRandomNumber(0, allowedSnakeDirections.length)
+    getRandomNumber(0, allowedSnakeDirections.length - 1)
   ]
 ];
+
+const getRandomBackgroundColor = () => getRandomRgbColor(50, 175);
+
+const getRandomBackgroundGradient = () => `
+  linear-gradient(
+    ${getRandomNumber(0, 360)}deg, ${getRandomRgbColor(50, 175)}, ${getRandomRgbColor(50, 175)}
+  )
+`.trim();
+
+const getRandomGradientFromColors = () => `
+  linear-gradient(
+    ${getRandomNumber(0, 360)}deg, ${getRandomColorFromColors()}, ${getRandomColorFromColors()}
+  )
+`.trim();
 
 const config = {
   boxShadowMaxBlur: 200,
@@ -151,16 +175,10 @@ const config = {
   circleDiameterMax: getRandomNumber(20, 50),
   circleGlowMaxOpacity,
   circleGlowMinOpacity,
-  colors: getColors(
-    isCircleColourIncremental,
-    minColorsTotal,
-    isCircleRValueIncremental,
-    isCircleGValueIncremental,
-    isCircleBValueIncremental,
-  ),
+  colors,
   defaultCircleGlowOpacity: getRandomNumber(circleGlowMinOpacity, circleGlowMaxOpacity) / 10,
   defaultDirectionIncrements: makeDirectionIncrements(defaultSnakeAngle),
-  isCircleColourIncremental,
+  isCircleColorIncremental,
   isCircleRValueIncremental,
   isCircleGValueIncremental,
   isCircleBValueIncremental,
@@ -197,16 +215,21 @@ const config = {
 
   defaultIsDotsDark: randomTrueOrFalse(),
   isDotsDarkCheckPerCircle: randomTrueOrFalse(),
-  isMarkmakingPresent: randomTrueOrFalse(),
+  // isMarkmakingPresent: randomTrueOrFalse(),
+  isMarkmakingPresent: false,
   isSnakeAngleMaxRandomPerDirection: randomTrueOrFalse(),
   isSnakeAngleRandomPerDirection: randomTrueOrFalse(),
   layout,
   minColorsTotal,
   defaultSnakeAngle,
   allowedSnakeDirections,
+  backgroundColor: randomTrueOrFalse() ? getRandomBackgroundColor() : getRandomBackgroundGradient(),
   defaultSnakeDirection: getSnakeDirection(),
   snakeAngleMax: getRandomNumber(10, 50),
   totalCircles: layout === 'grid' ? getRandomSquareNumber(50, 500) : getRandomNumber(50, 500),
+
+  isCircleGradientsEnabled: randomTrueOrFalse(),
+  circleGradientProbability: getRandomNumber(0, 10) / 10,
 };
 
 if (!config.isDotsBackground) {
@@ -218,9 +241,9 @@ if (!config.isDotsBackground) {
   document.getElementById('dots-dark-background').remove();
 }
 
-document.getElementById('background').style.backgroundColor = getRandomRgbColour(50, 175);
-document.getElementById('colour-layer').style.backgroundColor = getRandomRgbColour();
-document.getElementById('lighten-layer').style.backgroundColor = getRandomRgbColour();
+document.getElementById('background').style.background = config.backgroundColor;
+document.getElementById('colour-layer').style.background = randomTrueOrFalse() ? getRandomColorFromColors() : getRandomGradientFromColors();
+document.getElementById('lighten-layer').style.background = randomTrueOrFalse() ? getRandomColorFromColors() : getRandomGradientFromColors();
 
 let createCircle;
 
@@ -277,7 +300,14 @@ if (config.layout === 'confetti') {
       }
     }
 
-    const color = config.colors[getRandomNumber(0, config.colors.length - 1)];
+    let color;
+
+    if (config.isCircleGradientsEnabled) {
+      color = Math.random() < config.circleGradientProbability
+        ? getRandomGradientFromColors() : getRandomColorFromColors();
+    } else {
+      color = getRandomColorFromColors();
+    }
 
     circle.style.opacity = opacity;
     circle.style.width = `${diameter}px`;
@@ -287,13 +317,13 @@ if (config.layout === 'confetti') {
     circle.style.position = 'absolute';
     circle.style.top = `${getRandomNumber(0 - diameter, window.innerHeight)}px`;
     circle.style.left = `${getRandomNumber(0 - diameter, window.innerWidth)}px`;
-    circle.style.backgroundColor = color;
+    circle.style.background = color;
 
     const circleGlowOpacity = config.isCircleGlowOpacityPerCircle
       ? getRandomNumber(config.circleGlowMinOpacity, config.circleGlowMaxOpacity) / 10
       : config.defaultCircleGlowOpacity;
 
-    const boxShadowColor = color
+    const boxShadowColor = getRandomColorFromColors()
       .replace('rgb', 'rgba')
       .replace(
         ')',
@@ -334,7 +364,15 @@ if (config.layout === 'confetti') {
 
     const circleContainer = document.createElement('div');
     const circle = document.createElement('div');
-    const color = config.colors[getRandomNumber(0, config.colors.length - 1)];
+
+    let color;
+
+    if (config.isCircleGradientsEnabled) {
+      color = Math.random() < config.circleGradientProbability
+        ? getRandomGradientFromColors() : getRandomColorFromColors();
+    } else {
+      color = getRandomColorFromColors();
+    }
 
     circleContainer.style.width = `${width}px`;
     circleContainer.style.zIndex = '2';
@@ -410,13 +448,13 @@ if (config.layout === 'confetti') {
     circle.style.height = `${diameter}px`;
     circle.style.flex = 'none';
     circle.style.borderRadius = '50%';
-    circle.style.backgroundColor = color;
+    circle.style.background = color;
 
     const circleGlowOpacity = config.isCircleGlowOpacityPerCircle
       ? getRandomNumber(config.circleGlowMinOpacity, config.circleGlowMaxOpacity) / 10
       : config.defaultCircleGlowOpacity;
 
-    const boxShadowColor = color
+    const boxShadowColor = getRandomColorFromColors()
       .replace('rgb', 'rgba')
       .replace(
         ')',
@@ -523,7 +561,15 @@ if (config.layout === 'confetti') {
     if (!leftValue) leftValue = getRandomNumber(0 - diameter, window.innerWidth);
 
     const circle = document.createElement('div');
-    const color = config.colors[getRandomNumber(0, config.colors.length - 1)];
+
+    let color;
+
+    if (config.isCircleGradientsEnabled) {
+      color = Math.random() < config.circleGradientProbability
+        ? getRandomGradientFromColors() : getRandomColorFromColors();
+    } else {
+      color = getRandomColorFromColors();
+    }
 
     circle.style.opacity = opacity;
     circle.style.transform = `translateY(${topOffset}px) translateX(${leftOffset}px)`;
@@ -534,13 +580,13 @@ if (config.layout === 'confetti') {
     circle.style.position = 'absolute';
     circle.style.top = `${topValue}px`;
     circle.style.left = `${leftValue}px`;
-    circle.style.backgroundColor = color;
+    circle.style.background = color;
 
     const circleGlowOpacity = config.isCircleGlowOpacityPerCircle
       ? getRandomNumber(config.circleGlowMinOpacity, config.circleGlowMaxOpacity) / 10
       : config.defaultCircleGlowOpacity;
 
-    const boxShadowColor = color
+    const boxShadowColor = getRandomColorFromColors()
       .replace('rgb', 'rgba')
       .replace(
         ')',
