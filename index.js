@@ -242,8 +242,6 @@ if (!config.isDotsBackground) {
 }
 
 document.getElementById('background').style.background = config.backgroundColor;
-document.getElementById('colour-layer').style.background = randomTrueOrFalse() ? getRandomColorFromColors() : getRandomGradientFromColors();
-document.getElementById('lighten-layer').style.background = randomTrueOrFalse() ? getRandomColorFromColors() : getRandomGradientFromColors();
 
 let createCircle;
 
