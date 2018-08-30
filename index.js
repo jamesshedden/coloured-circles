@@ -70,7 +70,7 @@ const makeDirectionIncrements = (snakeAngle, isSnakeAngleRandomPerDirection, sna
   },
 });
 
-const getRandomRgbColor = (min, max) => {
+const getRandomColor = (min, max) => {
   min = min || 0;
   max = max || 255;
   return `rgb(${getRandomNumber(min, max)}, ${getRandomNumber(min, max)}, ${getRandomNumber(min, max)})`;
@@ -120,7 +120,7 @@ const getColors = (
     });
   }
 
-  return [...Array(getRandomNumber(minColorsTotal, 50))].map(() => getRandomRgbColor());
+  return [...Array(getRandomNumber(minColorsTotal, 50))].map(() => getRandomColor());
 };
 
 const circleGlowMinOpacity = 2; // out of 1
@@ -154,11 +154,9 @@ const getSnakeDirection = () => AVAILABLE_SNAKE_DIRECTIONS[
   ]
 ];
 
-const getRandomBackgroundColor = () => getRandomRgbColor(50, 175);
-
-const getRandomBackgroundGradient = () => `
+const getRandomGradient = () => `
   linear-gradient(
-    ${getRandomNumber(0, 360)}deg, ${getRandomRgbColor(50, 175)}, ${getRandomRgbColor(50, 175)}
+    ${getRandomNumber(0, 360)}deg, ${getRandomColor()}, ${getRandomColor()}
   )
 `.trim();
 
@@ -223,7 +221,7 @@ const config = {
   minColorsTotal,
   defaultSnakeAngle,
   allowedSnakeDirections,
-  backgroundColor: randomTrueOrFalse() ? getRandomBackgroundColor() : getRandomBackgroundGradient(),
+  backgroundColor: randomTrueOrFalse() ? getRandomColor() : getRandomGradient(),
   defaultSnakeDirection: getSnakeDirection(),
   snakeAngleMax: getRandomNumber(10, 50),
   totalCircles: layout === 'grid' ? getRandomSquareNumber(50, 500) : getRandomNumber(50, 500),
