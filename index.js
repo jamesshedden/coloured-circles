@@ -188,15 +188,28 @@ const config = {
   diameterGradualIncrementAmount: getRandomNumber(0, 5),
   isDiameterChangeCircleNumberReset: randomTrueOrFalse(),
 
+  isBorderRadiusChangeEnabled: randomTrueOrFalse(),
+  numberOfCirclesUntilBorderRadiusChange: getRandomNumber(0, 10),
+  borderRadiusGradualIncrementAmount: getRandomNumber(0, 2),
+  isBorderRadiusChangeCircleNumberReset: randomTrueOrFalse(),
+  defaultBorderRadius: 50,
+
   isOpacityChangeEnabled: randomTrueOrFalse(),
   numberOfCirclesUntilOpacityChange: getRandomNumber(0, 20),
   opacityGradualIncrementAmount: getRandomNumber(0, 0.05),
   isOpacityChangeCircleNumberReset: randomTrueOrFalse(),
 
+  isRotationChangeEnabled: randomTrueOrFalse(),
+  numberOfCirclesUntilRotationChange: getRandomNumber(0, 20),
+  rotateGradualIncrementAmount: getRandomNumber(0, 5),
+  isRotationChangeCircleNumberReset: randomTrueOrFalse(),
+  defaultRotation: 0,
+  maxRotation: 360,
+
   isCircleGlowOpacityPerCircle: randomTrueOrFalse(),
   isDirectionDifferentOnReset: randomTrueOrFalse(),
 
-  numberOfCirclesUntilDirectionChange: getRandomNumber(0, 20),
+  numberOfCirclesUntilDirectionChange: getRandomNumber(0, 10),
   isDirectionChangeCircleNumberReset: randomTrueOrFalse(),
 
   isDirectionIncrementsDifferentOnReset: randomTrueOrFalse(),
@@ -252,6 +265,14 @@ if (config.layout === 'confetti') {
   let opacity = 1;
   let numberOfCirclesUntilOpacityChange = config.numberOfCirclesUntilOpacityChange;
 
+  let circleBorderRadiusCounter = 0;
+  let borderRadius = config.defaultBorderRadius;
+  let numberOfCirclesUntilBorderRadiusChange = config.numberOfCirclesUntilBorderRadiusChange;
+
+  let circleRotationCounter = 0;
+  let rotation = config.defaultRotation;
+  let numberOfCirclesUntilRotationChange = config.numberOfCirclesUntilRotationChange;
+
   createCircle = () => {
     const isDotsDark = config.isDotsDarkCheckPerCircle
       ? randomTrueOrFalse() : config.defaultIsDotsDark;
@@ -275,6 +296,42 @@ if (config.layout === 'confetti') {
         }
 
         circleDiameterCounter = 0;
+      }
+    }
+
+    if (config.isBorderRadiusChangeEnabled) {
+      if (circleBorderRadiusCounter < numberOfCirclesUntilBorderRadiusChange) {
+        circleBorderRadiusCounter += 1;
+
+        if (config.borderRadiusGradualIncrementAmount) {
+          borderRadius += config.borderRadiusGradualIncrementAmount;
+        }
+      } else {
+        borderRadius = getRandomNumber(0, 50);
+
+        if (config.isBorderRadiusChangeCircleNumberReset) {
+          numberOfCirclesUntilBorderRadiusChange = getRandomNumber(0, 20);
+        }
+
+        circleBorderRadiusCounter = 0;
+      }
+    }
+
+    if (config.isRotationChangeEnabled) {
+      if (circleRotationCounter < numberOfCirclesUntilRotationChange) {
+        circleRotationCounter += 1;
+
+        if (config.rotationGradualIncrementAmount) {
+          rotation += config.rotationGradualIncrementAmount;
+        }
+      } else {
+        rotation = getRandomNumber(0, config.maxRotation);
+
+        if (config.isRotationChangeCircleNumberReset) {
+          numberOfCirclesUntilRotationChange = getRandomNumber(0, 20);
+        }
+
+        circleRotationCounter = 0;
       }
     }
 
@@ -308,12 +365,13 @@ if (config.layout === 'confetti') {
     circle.style.opacity = opacity;
     circle.style.width = `${diameter}px`;
     circle.style.height = `${diameter}px`;
-    circle.style.borderRadius = '50%';
+    circle.style.borderRadius = `${borderRadius}%`;
     circle.style.zIndex = '2';
     circle.style.position = 'absolute';
     circle.style.top = `${getRandomNumber(0 - diameter, window.innerHeight)}px`;
     circle.style.left = `${getRandomNumber(0 - diameter, window.innerWidth)}px`;
     circle.style.background = color;
+    circle.style.transform = `rotate(${rotation}deg)`;
 
     const circleGlowOpacity = config.isCircleGlowOpacityPerCircle
       ? getRandomNumber(config.circleGlowMinOpacity, config.circleGlowMaxOpacity) / 10
@@ -353,6 +411,14 @@ if (config.layout === 'confetti') {
   let circleOpacityCounter = 0;
   let opacity = 1;
   let numberOfCirclesUntilOpacityChange = config.numberOfCirclesUntilOpacityChange;
+
+  let circleBorderRadiusCounter = 0;
+  let borderRadius = config.defaultBorderRadius;
+  let numberOfCirclesUntilBorderRadiusChange = config.numberOfCirclesUntilBorderRadiusChange;
+
+  let circleRotationCounter = 0;
+  let rotation = config.defaultRotation;
+  let numberOfCirclesUntilRotationChange = config.numberOfCirclesUntilRotationChange;
 
   createCircle = () => {
     const isDotsDark = config.isDotsDarkCheckPerCircle
@@ -397,6 +463,42 @@ if (config.layout === 'confetti') {
       }
     }
 
+    if (config.isRotationChangeEnabled) {
+      if (circleRotationCounter < numberOfCirclesUntilRotationChange) {
+        circleRotationCounter += 1;
+
+        if (config.rotationGradualIncrementAmount) {
+          rotation += config.rotationGradualIncrementAmount;
+        }
+      } else {
+        rotation = getRandomNumber(0, config.maxRotation);
+
+        if (config.isRotationChangeCircleNumberReset) {
+          numberOfCirclesUntilRotationChange = getRandomNumber(0, 20);
+        }
+
+        circleRotationCounter = 0;
+      }
+    }
+
+    if (config.isBorderRadiusChangeEnabled) {
+      if (circleBorderRadiusCounter < numberOfCirclesUntilBorderRadiusChange) {
+        circleBorderRadiusCounter += 1;
+
+        if (config.borderRadiusGradualIncrementAmount) {
+          borderRadius += config.borderRadiusGradualIncrementAmount;
+        }
+      } else {
+        borderRadius = getRandomNumber(0, 50);
+
+        if (config.isBorderRadiusChangeCircleNumberReset) {
+          numberOfCirclesUntilBorderRadiusChange = getRandomNumber(0, 20);
+        }
+
+        circleBorderRadiusCounter = 0;
+      }
+    }
+
     if (config.isOpacityChangeEnabled) {
       if (circleOpacityCounter < numberOfCirclesUntilOpacityChange) {
         circleOpacityCounter += 1;
@@ -418,6 +520,7 @@ if (config.layout === 'confetti') {
     circle.style.position = 'relative';
     circle.style.top = `${topOffset}px`;
     circle.style.left = `${leftOffset}px`;
+    circle.style.transform = `rotate(${rotation}deg)`;
 
     if (config.isDiameterChangeEnabled) {
       if (circleDiameterCounter < numberOfCirclesUntilDiameterChange) {
@@ -443,7 +546,7 @@ if (config.layout === 'confetti') {
     circle.style.width = `${diameter}px`;
     circle.style.height = `${diameter}px`;
     circle.style.flex = 'none';
-    circle.style.borderRadius = '50%';
+    circle.style.borderRadius = `${borderRadius}%`;
     circle.style.background = color;
 
     const circleGlowOpacity = config.isCircleGlowOpacityPerCircle
@@ -491,6 +594,14 @@ if (config.layout === 'confetti') {
   let opacity = 1;
   let numberOfCirclesUntilOpacityChange = config.numberOfCirclesUntilOpacityChange;
 
+  let circleBorderRadiusCounter = 0;
+  let borderRadius = config.defaultBorderRadius;
+  let numberOfCirclesUntilBorderRadiusChange = config.numberOfCirclesUntilBorderRadiusChange;
+
+  let circleRotationCounter = 0;
+  let rotation = config.defaultRotation;
+  let numberOfCirclesUntilRotationChange = config.numberOfCirclesUntilRotationChange;
+
   createCircle = () => {
     const isDotsDark = config.isDotsDarkCheckPerCircle
       ? randomTrueOrFalse() : config.defaultIsDotsDark;
@@ -512,6 +623,24 @@ if (config.layout === 'confetti') {
         }
 
         circleDiameterCounter = 0;
+      }
+    }
+
+    if (config.isBorderRadiusChangeEnabled) {
+      if (circleBorderRadiusCounter < numberOfCirclesUntilBorderRadiusChange) {
+        circleBorderRadiusCounter += 1;
+
+        if (config.borderRadiusGradualIncrementAmount) {
+          borderRadius += config.borderRadiusGradualIncrementAmount;
+        }
+      } else {
+        borderRadius = getRandomNumber(0, 50);
+
+        if (config.isBorderRadiusChangeCircleNumberReset) {
+          numberOfCirclesUntilBorderRadiusChange = getRandomNumber(0, 20);
+        }
+
+        circleBorderRadiusCounter = 0;
       }
     }
 
@@ -553,6 +682,24 @@ if (config.layout === 'confetti') {
       }
     }
 
+    if (config.isRotationChangeEnabled) {
+      if (circleRotationCounter < numberOfCirclesUntilRotationChange) {
+        circleRotationCounter += 1;
+
+        if (config.rotationGradualIncrementAmount) {
+          rotation += config.rotationGradualIncrementAmount;
+        }
+      } else {
+        rotation = getRandomNumber(0, config.maxRotation);
+
+        if (config.isRotationChangeCircleNumberReset) {
+          numberOfCirclesUntilRotationChange = getRandomNumber(0, 20);
+        }
+
+        circleRotationCounter = 0;
+      }
+    }
+
     if (!topValue) topValue = getRandomNumber(0 - diameter, window.innerHeight);
     if (!leftValue) leftValue = getRandomNumber(0 - diameter, window.innerWidth);
 
@@ -568,11 +715,11 @@ if (config.layout === 'confetti') {
     }
 
     circle.style.opacity = opacity;
-    circle.style.transform = `translateY(${topOffset}px) translateX(${leftOffset}px)`;
+    circle.style.transform = `translateY(${topOffset}px) translateX(${leftOffset}px) rotate(${rotation}deg)`;
     circle.style.width = `${diameter}px`;
     circle.style.height = `${diameter}px`;
     circle.style.zIndex = '2';
-    circle.style.borderRadius = '50%';
+    circle.style.borderRadius = `${borderRadius}%`;
     circle.style.position = 'absolute';
     circle.style.top = `${topValue}px`;
     circle.style.left = `${leftValue}px`;
