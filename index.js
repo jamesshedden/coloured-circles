@@ -1,5 +1,5 @@
 const AVAILABLE_LAYOUTS = [
-  'confetti',
+  // 'confetti',
   'grid',
   'snake',
 ];
@@ -237,7 +237,7 @@ const config = {
   backgroundColor: randomTrueOrFalse() ? getRandomColor() : getRandomGradient(),
   defaultSnakeDirection: getSnakeDirection(),
   snakeAngleMax: getRandomNumber(10, 50),
-  totalCircles: layout === 'grid' ? getRandomSquareNumber(50, 500) : getRandomNumber(50, 500),
+  totalCircles: layout === 'grid' ? getRandomSquareNumber(50, 500) : getRandomNumber(150, 500),
 
   isCircleGradientsEnabled: randomTrueOrFalse(),
   circleGradientProbability: getRandomNumber(0, 10) / 10,
@@ -402,23 +402,28 @@ if (config.layout === 'confetti') {
   let circleDiameterCounter = 0;
   let numberOfCirclesUntilDiameterChange = config.numberOfCirclesUntilDiameterChange;
   let diameter = config.defaultCircleDiameter;
+  let isDiameterChangeEnabled = config.isDiameterChangeEnabled;
 
   let circleOffsetCounter = 0;
   let numberOfCirclesUntilGridOffsetChange = config.numberOfCirclesUntilGridOffsetChange;
   let topOffset = config.isGridOffsetChangeEnabled ? makeNumberRandomlyNegative(getRandomNumber(1, config.maxGridCircleOffset)) : 0;
   let leftOffset = config.isGridOffsetChangeEnabled ? makeNumberRandomlyNegative(getRandomNumber(1, config.maxGridCircleOffset)) : 0;
+  let isGridOffsetChangeEnabled = config.isGridOffsetChangeEnabled
 
   let circleOpacityCounter = 0;
   let opacity = 1;
   let numberOfCirclesUntilOpacityChange = config.numberOfCirclesUntilOpacityChange;
+  let isOpacityChangeEnabled = config.isOpacityChangeEnabled;
 
   let circleBorderRadiusCounter = 0;
   let borderRadius = config.defaultBorderRadius;
   let numberOfCirclesUntilBorderRadiusChange = config.numberOfCirclesUntilBorderRadiusChange;
+  let isBorderRadiusChangeEnabled = config.isBorderRadiusChangeEnabled;
 
   let circleRotationCounter = 0;
   let rotation = config.defaultRotation;
   let numberOfCirclesUntilRotationChange = config.numberOfCirclesUntilRotationChange;
+  let isRotationChangeEnabled = config.isRotationChangeEnabled;
 
   createCircle = () => {
     const isDotsDark = config.isDotsDarkCheckPerCircle
@@ -443,7 +448,7 @@ if (config.layout === 'confetti') {
     circleContainer.style.justifyContent = 'center';
     circleContainer.style.alignItems = 'center';
 
-    if (config.isGridOffsetChangeEnabled) {
+    if (isGridOffsetChangeEnabled) {
       if (circleOffsetCounter < numberOfCirclesUntilGridOffsetChange) {
         circleOffsetCounter += 1;
 
@@ -451,6 +456,13 @@ if (config.layout === 'confetti') {
           topOffset += config.offsetGradualIncrementAmount;
           leftOffset += config.offsetGradualIncrementAmount;
         }
+
+        // NOTE: There's a small change that offset changes will become
+        // disabled on the next circle, meaning no more following circles
+        // will have position offsets after that.
+        //
+        // The chance will be 1 in N where N is the total number of circles.
+        isGridOffsetChangeEnabled = Math.random() < (1 / config.totalCircles) ? false : true;
       } else {
         topOffset = makeNumberRandomlyNegative(getRandomNumber(1, config.maxGridCircleOffset));
         leftOffset = makeNumberRandomlyNegative(getRandomNumber(1, config.maxGridCircleOffset));
@@ -463,13 +475,26 @@ if (config.layout === 'confetti') {
       }
     }
 
-    if (config.isRotationChangeEnabled) {
+    if (!isGridOffsetChangeEnabled) {
+      // NOTE: If position offset changes are initially not enabled, there's a 1 in N chance
+      // that they will become enabled (where N is number of total circles)
+      isGridOffsetChangeEnabled = Math.random() < (1 / config.totalCircles) ? true : false;
+    }
+
+    if (isRotationChangeEnabled) {
       if (circleRotationCounter < numberOfCirclesUntilRotationChange) {
         circleRotationCounter += 1;
 
         if (config.rotationGradualIncrementAmount) {
           rotation += config.rotationGradualIncrementAmount;
         }
+
+        // NOTE: There's a small change that rotation changes will become
+        // disabled on the next circle, meaning no more following circles
+        // will have rotation after that.
+        //
+        // The chance will be 1 in N where N is the total number of circles.
+        isRotationChangeEnabled = Math.random() < (1 / config.totalCircles) ? false : true;
       } else {
         rotation = getRandomNumber(0, config.maxRotation);
 
@@ -481,13 +506,26 @@ if (config.layout === 'confetti') {
       }
     }
 
-    if (config.isBorderRadiusChangeEnabled) {
+    if (!isRotationChangeEnabled) {
+      // NOTE: If rotation changes are initially not enabled, there's a 1 in N chance
+      // that they will become enabled (where N is number of total circles)
+      isRotationChangeEnabled = Math.random() < (1 / config.totalCircles) ? true : false;
+    }
+
+    if (isBorderRadiusChangeEnabled) {
       if (circleBorderRadiusCounter < numberOfCirclesUntilBorderRadiusChange) {
         circleBorderRadiusCounter += 1;
 
         if (config.borderRadiusGradualIncrementAmount) {
           borderRadius += config.borderRadiusGradualIncrementAmount;
         }
+
+        // NOTE: There's a small change that border radius changes will become
+        // disabled on the next circle, meaning no more following circles
+        // will have border radius changes after that.
+        //
+        // The chance will be 1 in N where N is the total number of circles.
+        isBorderRadiusChangeEnabled = Math.random() < (1 / config.totalCircles) ? false : true;
       } else {
         borderRadius = getRandomNumber(0, 50);
 
@@ -499,13 +537,26 @@ if (config.layout === 'confetti') {
       }
     }
 
-    if (config.isOpacityChangeEnabled) {
+    if (!isBorderRadiusChangeEnabled) {
+      // NOTE: If border radius changes are initially not enabled, there's a 1 in N chance
+      // that they will become enabled (where N is number of total circles)
+      isBorderRadiusChangeEnabled = Math.random() < (1 / config.totalCircles) ? true : false;
+    }
+
+    if (isOpacityChangeEnabled) {
       if (circleOpacityCounter < numberOfCirclesUntilOpacityChange) {
         circleOpacityCounter += 1;
 
         if (config.opacityGradualIncrementAmount) {
           opacity -= config.opacityGradualIncrementAmount;
         }
+
+        // NOTE: There's a small change that opacity changes will become
+        // disabled on the next circle, meaning no more following circles
+        // will have opacity changes after that.
+        //
+        // The chance will be 1 in N where N is the total number of circles.
+        isOpacityChangeEnabled = Math.random() < (1 / config.totalCircles) ? false : true;
       } else {
         opacity = getRandomNumber(0, 100) / 100;
 
@@ -517,18 +568,26 @@ if (config.layout === 'confetti') {
       }
     }
 
-    circle.style.position = 'relative';
-    circle.style.top = `${topOffset}px`;
-    circle.style.left = `${leftOffset}px`;
-    circle.style.transform = `rotate(${rotation}deg)`;
+    if (!isOpacityChangeEnabled) {
+      // NOTE: If opacity changes are initially not enabled, there's a 1 in N chance
+      // that they will become enabled (where N is number of total circles)
+      isOpacityChangeEnabled = Math.random() < (1 / config.totalCircles) ? true : false;
+    }
 
-    if (config.isDiameterChangeEnabled) {
+    if (isDiameterChangeEnabled) {
       if (circleDiameterCounter < numberOfCirclesUntilDiameterChange) {
         circleDiameterCounter += 1;
 
         if (config.diameterGradualIncrementAmount) {
           diameter += config.diameterGradualIncrementAmount;
         }
+
+        // NOTE: There's a small change that diameter changes will become
+        // disabled on the next circle, meaning no more following circles
+        // will have diameter changes after that.
+        //
+        // The chance will be 1 in N where N is the total number of circles.
+        isDiameterChangeEnabled = Math.random() < (1 / config.totalCircles) ? false : true;
       } else {
         diameter = getRandomCircleDiameter(
           config.isCircleDiameterMaxRandomPerDirection, config.circleDiameterMax,
@@ -542,6 +601,16 @@ if (config.layout === 'confetti') {
       }
     }
 
+    if (!isDiameterChangeEnabled) {
+      // NOTE: If diameter changes are initially not enabled, there's a 1 in N chance
+      // that they will become enabled (where N is number of total circles)
+      isDiameterChangeEnabled = Math.random() < (1 / config.totalCircles) ? true : false;
+    }
+
+    circle.style.position = 'relative';
+    circle.style.top = `${topOffset}px`;
+    circle.style.left = `${leftOffset}px`;
+    circle.style.transform = `rotate(${rotation}deg)`;
     circle.style.opacity = opacity;
     circle.style.width = `${diameter}px`;
     circle.style.height = `${diameter}px`;
@@ -584,35 +653,47 @@ if (config.layout === 'confetti') {
   let circleDiameterCounter = 0;
   let diameter = config.defaultCircleDiameter;
   let numberOfCirclesUntilDiameterChange = config.numberOfCirclesUntilDiameterChange;
+  let isDiameterChangeEnabled = config.isDiameterChangeEnabled;
 
   let circleOffsetCounter = 0;
   let topOffset = config.isGridOffsetChangeEnabled ? makeNumberRandomlyNegative(getRandomNumber(1, config.maxGridCircleOffset)) : 0;
   let leftOffset = config.isGridOffsetChangeEnabled ? makeNumberRandomlyNegative(getRandomNumber(1, config.maxGridCircleOffset)) : 0;
   let numberOfCirclesUntilGridOffsetChange = config.numberOfCirclesUntilGridOffsetChange;
+  let isGridOffsetChangeEnabled = config.isGridOffsetChangeEnabled;
 
   let circleOpacityCounter = 0;
   let opacity = 1;
   let numberOfCirclesUntilOpacityChange = config.numberOfCirclesUntilOpacityChange;
+  let isOpacityChangeEnabled = config.isOpacityChangeEnabled;
 
   let circleBorderRadiusCounter = 0;
   let borderRadius = config.defaultBorderRadius;
   let numberOfCirclesUntilBorderRadiusChange = config.numberOfCirclesUntilBorderRadiusChange;
+  let isBorderRadiusChangeEnabled = config.isBorderRadiusChangeEnabled;
 
   let circleRotationCounter = 0;
   let rotation = config.defaultRotation;
   let numberOfCirclesUntilRotationChange = config.numberOfCirclesUntilRotationChange;
+  let isRotationChangeEnabled = config.isRotationChangeEnabled;
 
   createCircle = () => {
     const isDotsDark = config.isDotsDarkCheckPerCircle
       ? randomTrueOrFalse() : config.defaultIsDotsDark;
 
-    if (config.isDiameterChangeEnabled) {
+    if (isDiameterChangeEnabled) {
       if (circleDiameterCounter < numberOfCirclesUntilDiameterChange) {
         circleDiameterCounter += 1;
 
         if (config.diameterGradualIncrementAmount) {
           diameter += config.diameterGradualIncrementAmount;
         }
+
+        // NOTE: There's a small change that diameter changes will become
+        // disabled on the next circle, meaning no more following circles
+        // will have diameter changes after that.
+        //
+        // The chance will be 1 in N where N is the total number of circles.
+        isDiameterChangeEnabled = Math.random() < (1 / config.totalCircles) ? false : true;
       } else {
         diameter = getRandomCircleDiameter(
           config.isCircleDiameterMaxRandomPerDirection, config.circleDiameterMax,
@@ -626,13 +707,26 @@ if (config.layout === 'confetti') {
       }
     }
 
-    if (config.isBorderRadiusChangeEnabled) {
+    if (!isDiameterChangeEnabled) {
+      // NOTE: If diameter changes are initially not enabled, there's a 1 in N chance
+      // that they will become enabled (where N is number of total circles)
+      isDiameterChangeEnabled = Math.random() < (1 / config.totalCircles) ? true : false;
+    }
+
+    if (isBorderRadiusChangeEnabled) {
       if (circleBorderRadiusCounter < numberOfCirclesUntilBorderRadiusChange) {
         circleBorderRadiusCounter += 1;
 
         if (config.borderRadiusGradualIncrementAmount) {
           borderRadius += config.borderRadiusGradualIncrementAmount;
         }
+
+        // NOTE: There's a small change that border radius changes will become
+        // disabled on the next circle, meaning no more following circles
+        // will have border radius changes after that.
+        //
+        // The chance will be 1 in N where N is the total number of circles.
+        isBorderRadiusChangeEnabled = Math.random() < (1 / config.totalCircles) ? false : true;
       } else {
         borderRadius = getRandomNumber(0, 50);
 
@@ -644,7 +738,13 @@ if (config.layout === 'confetti') {
       }
     }
 
-    if (config.isGridOffsetChangeEnabled) {
+    if (!isBorderRadiusChangeEnabled) {
+      // NOTE: If border radius changes are initially not enabled, there's a 1 in N chance
+      // that they will become enabled (where N is number of total circles)
+      isBorderRadiusChangeEnabled = Math.random() < (1 / config.totalCircles) ? true : false;
+    }
+
+    if (isGridOffsetChangeEnabled) {
       if (circleOffsetCounter < numberOfCirclesUntilGridOffsetChange) {
         circleOffsetCounter += 1;
 
@@ -652,6 +752,13 @@ if (config.layout === 'confetti') {
           topOffset += config.offsetGradualIncrementAmount;
           leftOffset += config.offsetGradualIncrementAmount;
         }
+
+        // NOTE: There's a small change that offset changes will become
+        // disabled on the next circle, meaning no more following circles
+        // will have position offsets after that.
+        //
+        // The chance will be 1 in N where N is the total number of circles.
+        isGridOffsetChangeEnabled = Math.random() < (1 / config.totalCircles) ? false : true;
       } else {
         topOffset = makeNumberRandomlyNegative(getRandomNumber(1, config.maxGridCircleOffset));
         leftOffset = makeNumberRandomlyNegative(getRandomNumber(1, config.maxGridCircleOffset));
@@ -664,13 +771,27 @@ if (config.layout === 'confetti') {
       }
     }
 
-    if (config.isOpacityChangeEnabled) {
+    if (!isGridOffsetChangeEnabled) {
+      // NOTE: If position offset changes are initially not enabled, there's a 1 in N chance
+      // that they will become enabled (where N is number of total circles)
+      isGridOffsetChangeEnabled = Math.random() < (1 / config.totalCircles) ? true : false;
+    }
+
+
+    if (isOpacityChangeEnabled) {
       if (circleOpacityCounter < numberOfCirclesUntilOpacityChange) {
         circleOpacityCounter += 1;
 
         if (config.opacityGradualIncrementAmount) {
           opacity -= config.opacityGradualIncrementAmount;
         }
+
+        // NOTE: There's a small change that opacity changes will become
+        // disabled on the next circle, meaning no more following circles
+        // will have opacity changes after that.
+        //
+        // The chance will be 1 in N where N is the total number of circles.
+        isOpacityChangeEnabled = Math.random() < (1 / config.totalCircles) ? false : true;
       } else {
         opacity = getRandomNumber(0, 100) / 100;
 
@@ -682,13 +803,26 @@ if (config.layout === 'confetti') {
       }
     }
 
-    if (config.isRotationChangeEnabled) {
+    if (!isOpacityChangeEnabled) {
+      // NOTE: If opacity changes are initially not enabled, there's a 1 in N chance
+      // that they will become enabled (where N is number of total circles)
+      isOpacityChangeEnabled = Math.random() < (1 / config.totalCircles) ? true : false;
+    }
+
+    if (isRotationChangeEnabled) {
       if (circleRotationCounter < numberOfCirclesUntilRotationChange) {
         circleRotationCounter += 1;
 
         if (config.rotationGradualIncrementAmount) {
           rotation += config.rotationGradualIncrementAmount;
         }
+
+        // NOTE: There's a small change that rotation changes will become
+        // disabled on the next circle, meaning no more following circles
+        // will have rotation after that.
+        //
+        // The chance will be 1 in N where N is the total number of circles.
+        isRotationChangeEnabled = Math.random() < (1 / config.totalCircles) ? false : true;
       } else {
         rotation = getRandomNumber(0, config.maxRotation);
 
@@ -698,6 +832,12 @@ if (config.layout === 'confetti') {
 
         circleRotationCounter = 0;
       }
+    }
+
+    if (!isRotationChangeEnabled) {
+      // NOTE: If rotation changes are initially not enabled, there's a 1 in N chance
+      // that they will become enabled (where N is number of total circles)
+      isRotationChangeEnabled = Math.random() < (1 / config.totalCircles) ? true : false;
     }
 
     if (!topValue) topValue = getRandomNumber(0 - diameter, window.innerHeight);
