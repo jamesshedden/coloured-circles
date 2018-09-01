@@ -193,6 +193,8 @@ const config = {
   borderRadiusGradualIncrementAmount: getRandomNumber(0, 2),
   isBorderRadiusChangeCircleNumberReset: randomTrueOrFalse(),
   defaultBorderRadius: 50,
+  borderRadiusMinPercent: 5,
+  borderRadiusMaxPercent: 50,
 
   isOpacityChangeEnabled: randomTrueOrFalse(),
   numberOfCirclesUntilOpacityChange: getRandomNumber(0, 20),
@@ -241,6 +243,9 @@ const config = {
 
   isCircleGradientsEnabled: randomTrueOrFalse(),
   circleGradientProbability: getRandomNumber(0, 10) / 10,
+
+  trianglesEnabled: randomTrueOrFalse(),
+  trianglesProbability: getRandomNumber(0, 10) / 10,
 };
 
 if (!config.isDotsBackground) {
@@ -307,7 +312,7 @@ if (config.layout === 'confetti') {
           borderRadius += config.borderRadiusGradualIncrementAmount;
         }
       } else {
-        borderRadius = getRandomNumber(0, 50);
+        borderRadius = getRandomNumber(config.borderRadiusMinPercent, config.borderRadiusMaxPercent);
 
         if (config.isBorderRadiusChangeCircleNumberReset) {
           numberOfCirclesUntilBorderRadiusChange = getRandomNumber(0, 20);
@@ -527,7 +532,7 @@ if (config.layout === 'confetti') {
         // The chance will be 1 in N where N is the total number of circles.
         isBorderRadiusChangeEnabled = Math.random() < (1 / config.totalCircles) ? false : true;
       } else {
-        borderRadius = getRandomNumber(0, 50);
+        borderRadius = getRandomNumber(config.borderRadiusMinPercent, config.borderRadiusMaxPercent);
 
         if (config.isBorderRadiusChangeCircleNumberReset) {
           numberOfCirclesUntilBorderRadiusChange = getRandomNumber(0, 20);
@@ -617,6 +622,11 @@ if (config.layout === 'confetti') {
     circle.style.flex = 'none';
     circle.style.borderRadius = `${borderRadius}%`;
     circle.style.background = color;
+
+    if (config.trianglesEnabled && Math.random() < config.trianglesProbability) {
+      circle.style.borderRadius = 0;
+      circle.style.clipPath = 'polygon(50% 10%, 0% 100%, 100% 100%)';
+    }
 
     const circleGlowOpacity = config.isCircleGlowOpacityPerCircle
       ? getRandomNumber(config.circleGlowMinOpacity, config.circleGlowMaxOpacity) / 10
@@ -728,7 +738,7 @@ if (config.layout === 'confetti') {
         // The chance will be 1 in N where N is the total number of circles.
         isBorderRadiusChangeEnabled = Math.random() < (1 / config.totalCircles) ? false : true;
       } else {
-        borderRadius = getRandomNumber(0, 50);
+        borderRadius = getRandomNumber(config.borderRadiusMinPercent, config.borderRadiusMaxPercent);
 
         if (config.isBorderRadiusChangeCircleNumberReset) {
           numberOfCirclesUntilBorderRadiusChange = getRandomNumber(0, 20);
@@ -864,6 +874,11 @@ if (config.layout === 'confetti') {
     circle.style.top = `${topValue}px`;
     circle.style.left = `${leftValue}px`;
     circle.style.background = color;
+
+    if (config.trianglesEnabled && Math.random() < config.trianglesProbability) {
+      circle.style.borderRadius = 0;
+      circle.style.clipPath = 'polygon(50% 10%, 0% 100%, 100% 100%)';
+    }
 
     const circleGlowOpacity = config.isCircleGlowOpacityPerCircle
       ? getRandomNumber(config.circleGlowMinOpacity, config.circleGlowMaxOpacity) / 10
