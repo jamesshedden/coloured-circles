@@ -154,17 +154,19 @@ const getSnakeDirection = () => AVAILABLE_SNAKE_DIRECTIONS[
   ]
 ];
 
-const getRandomGradient = () => `
+const getRandomGradient = angle => `
   linear-gradient(
-    ${getRandomNumber(0, 360)}deg, ${getRandomColor()}, ${getRandomColor()}
+    ${angle}deg, ${getRandomColor()}, ${getRandomColor()}
   )
 `.trim();
 
-const getRandomGradientFromColors = () => `
+const getRandomGradientFromColors = angle => `
   linear-gradient(
-    ${getRandomNumber(0, 360)}deg, ${getRandomColorFromColors()}, ${getRandomColorFromColors()}
+    ${angle || getRandomNumber(0, 360)}deg, ${getRandomColorFromColors()}, ${getRandomColorFromColors()}
   )
 `.trim();
+
+const defaultCircleGradientAngle = getRandomNumber(0, 360);
 
 const config = {
   boxShadowMaxBlur: 200,
@@ -174,6 +176,7 @@ const config = {
   circleGlowMaxOpacity,
   circleGlowMinOpacity,
   colors,
+
   defaultCircleGlowOpacity: getRandomNumber(circleGlowMinOpacity, circleGlowMaxOpacity) / 10,
   defaultDirectionIncrements: makeDirectionIncrements(defaultSnakeAngle),
   isCircleColorIncremental,
@@ -246,6 +249,12 @@ const config = {
 
   trianglesEnabled: randomTrueOrFalse(),
   trianglesProbability: getRandomNumber(0, 10) / 10,
+
+  isCircleGradientAngleChangeEnabled: randomTrueOrFalse(),
+  numberOfCirclesUntilCircleGradientAngleChange: getRandomNumber(0, 20),
+  circleGradientAngleGradualIncrementAmount: getRandomNumber(2, 20),
+  isCircleGradientAngleChangeCircleNumberReset: randomTrueOrFalse(),
+  defaultCircleGradientAngle,
 };
 
 if (!config.isDotsBackground) {
@@ -430,6 +439,11 @@ if (config.layout === 'confetti') {
   let numberOfCirclesUntilRotationChange = config.numberOfCirclesUntilRotationChange;
   let isRotationChangeEnabled = config.isRotationChangeEnabled;
 
+  let circleGradientCounter = 0;
+  let circleGradient = config.defaultCircleGradient;
+  let numberOfCirclesUntilCircleGradientChange = config.numberOfCirclesUntilCircleGradientChange;
+  let isCircleGradientChangeEnabled = config.isCircleGradientChangeEnabled;
+
   createCircle = () => {
     const isDotsDark = config.isDotsDarkCheckPerCircle
       ? randomTrueOrFalse() : config.defaultIsDotsDark;
@@ -437,21 +451,43 @@ if (config.layout === 'confetti') {
     const circleContainer = document.createElement('div');
     const circle = document.createElement('div');
 
-    let color;
-
-    if (config.isCircleGradientsEnabled) {
-      color = Math.random() < config.circleGradientProbability
-        ? getRandomGradientFromColors() : getRandomColorFromColors();
-    } else {
-      color = getRandomColorFromColors();
-    }
-
     circleContainer.style.width = `${width}px`;
     circleContainer.style.zIndex = '2';
     circleContainer.style.height = `${height}px`;
     circleContainer.style.display = 'flex';
     circleContainer.style.justifyContent = 'center';
     circleContainer.style.alignItems = 'center';
+
+    if (isCircleGradientChangeEnabled) {
+      if (circleGradientCounter < numberOfCirclesUntilCircleGradientChange) {
+        circleGradientCounter += 1;
+
+        if (config.rotationGradualIncrementAmount) {
+          circleGradient += config.circleGradientGradualIncrementAmount;
+        }
+
+        // NOTE: There's a small change that offset changes will become
+        // disabled on the next circle, meaning no more following circles
+        // will have position offsets after that.
+        //
+        // The chance will be 1 in N where N is the total number of circles.
+        isCircleGradientChangeEnabled = Math.random() < (1 / config.totalCircles) ? false : true;
+      } else {
+        circleGradient = getRandomNumber(0, 360);
+
+        if (config.isOffsetChangeCircleNumberReset) {
+          numberOfCirclesUntilCircleGradientChange = getRandomNumber(0, 20);
+        }
+
+        circleGradientCounter = 0;
+      }
+    }
+
+    if (!isCircleGradientChangeEnabled) {
+      // NOTE: If position offset changes are initially not enabled, there's a 1 in N chance
+      // that they will become enabled (where N is number of total circles)
+      isCircleGradientChangeEnabled = Math.random() < (1 / config.totalCircles) ? true : false;
+    }
 
     if (isGridOffsetChangeEnabled) {
       if (circleOffsetCounter < numberOfCirclesUntilGridOffsetChange) {
@@ -612,6 +648,15 @@ if (config.layout === 'confetti') {
       isDiameterChangeEnabled = Math.random() < (1 / config.totalCircles) ? true : false;
     }
 
+    let color;
+
+    if (config.isCircleGradientsEnabled) {
+      color = Math.random() < config.circleGradientProbability
+        ? getRandomGradientFromColors(circleGradient) : getRandomColorFromColors();
+    } else {
+      color = getRandomColorFromColors();
+    }
+
     circle.style.position = 'relative';
     circle.style.top = `${topOffset}px`;
     circle.style.left = `${leftOffset}px`;
@@ -686,6 +731,11 @@ if (config.layout === 'confetti') {
   let numberOfCirclesUntilRotationChange = config.numberOfCirclesUntilRotationChange;
   let isRotationChangeEnabled = config.isRotationChangeEnabled;
 
+  let circleGradientCounter = 0;
+  let circleGradient = config.defaultCircleGradient;
+  let numberOfCirclesUntilCircleGradientChange = config.numberOfCirclesUntilCircleGradientChange;
+  let isCircleGradientChangeEnabled = config.isCircleGradientChangeEnabled;
+
   createCircle = () => {
     const isDotsDark = config.isDotsDarkCheckPerCircle
       ? randomTrueOrFalse() : config.defaultIsDotsDark;
@@ -721,6 +771,37 @@ if (config.layout === 'confetti') {
       // NOTE: If diameter changes are initially not enabled, there's a 1 in N chance
       // that they will become enabled (where N is number of total circles)
       isDiameterChangeEnabled = Math.random() < (1 / config.totalCircles) ? true : false;
+    }
+
+    if (isCircleGradientChangeEnabled) {
+      if (circleGradientCounter < numberOfCirclesUntilCircleGradientChange) {
+        circleGradientCounter += 1;
+
+        if (config.rotationGradualIncrementAmount) {
+          circleGradient += config.circleGradientGradualIncrementAmount;
+        }
+
+        // NOTE: There's a small change that offset changes will become
+        // disabled on the next circle, meaning no more following circles
+        // will have position offsets after that.
+        //
+        // The chance will be 1 in N where N is the total number of circles.
+        isCircleGradientChangeEnabled = Math.random() < (1 / config.totalCircles) ? false : true;
+      } else {
+        circleGradient = getRandomNumber(0, 360);
+
+        if (config.isOffsetChangeCircleNumberReset) {
+          numberOfCirclesUntilCircleGradientChange = getRandomNumber(0, 20);
+        }
+
+        circleGradientCounter = 0;
+      }
+    }
+
+    if (!isCircleGradientChangeEnabled) {
+      // NOTE: If position offset changes are initially not enabled, there's a 1 in N chance
+      // that they will become enabled (where N is number of total circles)
+      isCircleGradientChangeEnabled = Math.random() < (1 / config.totalCircles) ? true : false;
     }
 
     if (isBorderRadiusChangeEnabled) {
@@ -859,7 +940,7 @@ if (config.layout === 'confetti') {
 
     if (config.isCircleGradientsEnabled) {
       color = Math.random() < config.circleGradientProbability
-        ? getRandomGradientFromColors() : getRandomColorFromColors();
+        ? getRandomGradientFromColors(circleGradient) : getRandomColorFromColors();
     } else {
       color = getRandomColorFromColors();
     }
