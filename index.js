@@ -156,7 +156,7 @@ const getSnakeDirection = () => AVAILABLE_SNAKE_DIRECTIONS[
 
 const getRandomGradient = angle => `
   linear-gradient(
-    ${angle}deg, ${getRandomColor()}, ${getRandomColor()}
+    ${angle || getRandomNumber(0, 360)}deg, ${getRandomColor()}, ${getRandomColor()}
   )
 `.trim();
 
