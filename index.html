@@ -1,48 +1,129 @@
 <!doctype html>
 <html style="height: 100%;">
-  <body style="width: 100%; height: 100%; margin: 0; overflow: hidden;">
+  <head>
+    <style type="text/css">
+      html, body {
+        height: 100%;
+      }
+
+      body {
+        width: 100%;
+        margin: 0;
+        overflow: hidden;
+      }
+
+      .background {
+        height: 100%;
+        margin: 0;
+        flex-direction: row;
+        flex-wrap: wrap;
+        display: flex;
+        overflow: hidden;
+      }
+
+      .frame {
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: flex;
+        height: 100%;
+        width: 100%;
+        flex-direction: column;
+      }
+
+      .frame-middle {
+        flex: 1 1 auto;
+      }
+
+      .frame-top,
+      .frame-bottom {
+        flex: none;
+      }
+
+      .frame-top,
+      .frame-middle,
+      .frame-bottom {
+        display: flex;
+        flex-direction: row;
+      }
+
+      .frame__vertical {
+        flex: none;
+      }
+
+      .frame__spacer {
+        flex: 1 1 auto;
+      }
+
+      .circle-container {
+        z-index: 2;
+        display: flex;
+        float: left;
+        justify-content: center;
+        align-items: center;
+      }
+    </style>
+  </head>
+  <body>
     <div id="background"
-    style="
-      height: 100%;
-      margin: 0;
-      flex-direction: row;
-      flex-wrap: wrap;
-      display: flex;
-      overflow: hidden;
-    ">
-    <div style="
-      background-image: url('./background.png');
-      opacity: 0.7;
-      mix-blend-mode: overlay;
-      width: 100%;
-      height: 100%;
-      z-index: 999999999999999;
-      position: absolute;
-    "></div>
-    <div
-    id="dots-light-background"
-    style="
-      background-image: url('./dots-light-transparent.png');
-      background-size: 300px auto;
-      opacity: 0.7;
-      mix-blend-mode: color-burn;
-      width: 100%;
-      height: 100%;
-      z-index: 1;
-      position: absolute;
-    "></div>
-    <div
-    id="dots-dark-background"
-    style="
-      background-image: url('./dots-dark-transparent.png');
-      background-size: 300px auto;
-      opacity: 0.7;
-      mix-blend-mode: color-dodge;
-      width: 100%;
-      height: 100%;
-      z-index: 1;
-      position: absolute;
-    "></div>
+    class="background">
+      <div style="
+        background-image: url('./background.png');
+        opacity: 0.7;
+        mix-blend-mode: overlay;
+        width: 100%;
+        height: 100%;
+        z-index: 999999999999999;
+        position: absolute;
+      "></div>
+      <div
+      id="dots-light-background"
+      style="
+        background-image: url('./dots-light-transparent.png');
+        background-size: 300px auto;
+        opacity: 0.7;
+        mix-blend-mode: color-burn;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+        position: absolute;
+      "></div>
+      <div
+      id="dots-dark-background"
+      style="
+        background-image: url('./dots-dark-transparent.png');
+        background-size: 300px auto;
+        opacity: 0.7;
+        mix-blend-mode: color-dodge;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+        position: absolute;
+      "></div>
+
+      <!-- <div id="frame" class="frame">
+        <div id="frame-top" class="frame-top">
+          <div class="frame__vertical"></div>
+          <div class="frame__spacer"></div>
+          <div class="frame__vertical"></div>
+        </div>
+
+        <div class="frame-middle">
+          <div id="frame-middle-left" class="frame__vertical"></div>
+          <div class="frame__spacer">
+            <div id="frame-middle-centre"
+            style="width: 100%; height: 100%; display: block; flex: none;">
+            </div>
+          </div>
+          <div id="frame-middle-right" class="frame__vertical"></div>
+        </div>
+
+        <div id="frame-bottom" class="frame-bottom">
+          <div class="frame__vertical"></div>
+          <div class="frame__spacer"></div>
+          <div class="frame__vertical"></div>
+        </div>
+      </div> -->
     </div>
   </body>
   <script src="./lib/index.js"></script>

@@ -1,6 +1,7 @@
 const AVAILABLE_LAYOUTS = [
   'grid',
   'snake',
+  'inline', // NOTE: This will just place circles one after the other inline
 ];
 
 const AVAILABLE_SNAKE_DIRECTIONS = {
@@ -168,10 +169,18 @@ const getRandomGradientFromColors = (angle, color1, color2) => `
 const defaultCircleGradientAngle = getRandomNumber(0, 360);
 
 const config = {
+  // NOTE: Get between 4 - 10% of the window's height to use as the
+  // height/width of a frame
+  frameDimension: window.innerHeight * (getRandomNumber(3, 7) / 100),
+  isFrameAboveCircles: randomTrueOrFalse(),
+  // isFrameEnabled: randomTrueOrFalse(),
+  isFrameEnabled: false,
+  // isCirclesContainerInsideFrame: randomTrueOrFalse(),
+  isCirclesContainerInsideFrame: false,
   boxShadowMaxBlur: 200,
   boxShadowMinBlur: 100,
   defaultCircleDiameter: getRandomNumber(20, 50),
-  circleDiameterMax: getRandomNumber(20, 50),
+  circleDiameterMax: getRandomNumber(20, 120),
   circleGlowMaxOpacity,
   circleGlowMinOpacity,
   colors,
@@ -240,7 +249,7 @@ const config = {
   backgroundColor: randomTrueOrFalse() ? getRandomColor() : getRandomGradient(),
   defaultSnakeDirection: getSnakeDirection(),
   snakeAngleMax: getRandomNumber(10, 50),
-  totalCircles: layout === 'grid' ? getRandomSquareNumber(50, 500) : getRandomNumber(150, 500),
+  totalCircles: layout === 'grid' ? getRandomSquareNumber(100, 600) : getRandomNumber(300, 600),
 
   isCircleGradientsEnabled: randomTrueOrFalse(),
   circleGradientProbability: getRandomNumber(0, 10) / 10,
@@ -253,6 +262,10 @@ const config = {
   circleGradientAngleGradualIncrementAmount: getRandomNumber(2, 20),
   isCircleGradientAngleChangeCircleNumberReset: randomTrueOrFalse(),
   defaultCircleGradientAngle,
+
+  innerCircleEnabled: randomTrueOrFalse(),
+  innerCircleProbability: getRandomNumber(0, 10) / 10,
+  innerCircleTotalMax: 3,
 };
 
 if (!config.isDotsBackground) {
@@ -262,6 +275,28 @@ if (!config.isDotsBackground) {
   document.getElementById('dots-light-background').remove();
 } else {
   document.getElementById('dots-dark-background').remove();
+}
+
+const circlesContainer = config.isCirclesContainerInsideFrame
+  ? document.getElementById('frame-middle-centre')
+  : document.getElementById('background');
+
+if (config.isFrameEnabled) {
+  if (config.isFrameAboveCircles) {
+    document.getElementById('frame').style.zIndex = '3';
+  }
+
+  document.getElementById('frame-top').style.height = `${config.frameDimension}px`;
+  document.getElementById('frame-top').style.backgroundColor = getRandomColorFromColors();
+
+  document.getElementById('frame-bottom').style.height = `${config.frameDimension}px`;
+  document.getElementById('frame-bottom').style.backgroundColor = getRandomColorFromColors();
+
+  document.getElementById('frame-middle-left').style.width = `${config.frameDimension}px`;
+  document.getElementById('frame-middle-left').style.backgroundColor = getRandomColorFromColors();
+
+  document.getElementById('frame-middle-right').style.width = `${config.frameDimension}px`;
+  document.getElementById('frame-middle-right').style.backgroundColor = getRandomColorFromColors();
 }
 
 document.getElementById('background').style.background = config.backgroundColor;
@@ -303,9 +338,83 @@ let leftOffset = isGridOffsetChangeEnabled
   ? makeNumberRandomlyNegative(getRandomNumber(1, config.maxGridCircleOffset))
   : 0;
 
+const insertCircleInGridItem = (circle) => {
+  const circleContainer = document.createElement('div');
+
+  circleContainer.classList.add('circle-container');
+
+  const width = circlesContainer.offsetWidth / Math.sqrt(config.totalCircles);
+  const height = circlesContainer.offsetHeight / Math.sqrt(config.totalCircles);
+
+  circleContainer.style.width = `${width}px`;
+  circleContainer.style.height = `${height}px`;
+
+  circleContainer.appendChild(circle);
+
+  return circleContainer;
+};
+
+const positionCircle = (circle) => {
+  const element = circle;
+
+  if (!topValue) topValue = getRandomNumber(0 - diameter, circlesContainer.offsetHeight);
+  if (!leftValue) leftValue = getRandomNumber(0 - diameter, circlesContainer.offsetWidth);
+
+  element.style.transform = `translateY(${topOffset}px) translateX(${leftOffset}px) rotate(${rotation}deg)`;
+  element.style.top = `${topValue}px`;
+  element.style.left = `${leftValue}px`;
+  element.style.zIndex = '2';
+  element.style.position = 'absolute';
+
+  let directionIncrements;
+
+  // if it hits the window edges in any location, find a new random starting point for everything
+  if (
+    topValue > window.innerHeight
+    || topValue < 0
+    || leftValue > window.innerWidth
+    || leftValue < 0
+  ) {
+    topValue = getRandomNumber(0, window.innerHeight);
+    leftValue = getRandomNumber(0, window.innerWidth);
+
+    snakeDirection = config.isDirectionDifferentOnReset
+      ? getSnakeDirection() : config.defaultSnakeDirection;
+
+    directionIncrements = config.isDirectionIncrementsDifferentOnReset
+      ? makeDirectionIncrements(0, config.isSnakeAngleRandomPerDirection, config.snakeAngleMax)
+      : config.defaultDirectionIncrements;
+  }
+
+  if (numberOfCirclesUntilDirectionChange) {
+    if (circleDirectionCounter < numberOfCirclesUntilDirectionChange) {
+      circleDirectionCounter += 1;
+    } else {
+      snakeDirection = getSnakeDirection();
+
+      if (config.isDirectionChangeCircleNumberReset) {
+        numberOfCirclesUntilDirectionChange = getRandomNumber(0, 20);
+      }
+
+      circleDirectionCounter = 0;
+    }
+  }
+
+  directionIncrements = config.isDirectionIncrementsDifferentPerCircle
+    ? makeDirectionIncrements(0, config.isSnakeAngleRandomPerDirection, config.snakeAngleMax)
+    : config.defaultDirectionIncrements;
+
+  topValue += directionIncrements[snakeDirection].top;
+  leftValue += directionIncrements[snakeDirection].left;
+
+  return element;
+};
+
 const createCircle = () => {
   const circle = document.createElement('div');
+
   const circleContainer = document.createElement('div');
+  circleContainer.classList.add('circle-container');
 
   if (isDiameterChangeEnabled) {
     if (circleDiameterCounter < numberOfCirclesUntilDiameterChange) {
@@ -502,6 +611,7 @@ const createCircle = () => {
   circle.style.width = `${diameter}px`;
   circle.style.height = `${diameter}px`;
   circle.style.opacity = opacity;
+  circle.style.overflow = 'hidden';
   circle.style.background = color;
   circle.style.position = 'relative';
   circle.style.top = `${topOffset}px`;
@@ -530,77 +640,57 @@ const createCircle = () => {
   //   circle.style.backgroundBlendMode = isDotsDark ? 'color-dodge' : 'color-burn';
   // }
 
-  if (config.layout === 'grid') {
-    const width = window.innerWidth / Math.sqrt(config.totalCircles);
-    const height = window.innerHeight / Math.sqrt(config.totalCircles);
-
-    circleContainer.style.width = `${width}px`;
-    circleContainer.style.zIndex = '2';
-    circleContainer.style.height = `${height}px`;
-    circleContainer.style.display = 'flex';
-    circleContainer.style.justifyContent = 'center';
-    circleContainer.style.alignItems = 'center';
-
-    circleContainer.appendChild(circle);
-  } else if (config.layout === 'snake') {
-    if (!topValue) topValue = getRandomNumber(0 - diameter, window.innerHeight);
-    if (!leftValue) leftValue = getRandomNumber(0 - diameter, window.innerWidth);
-
-    circle.style.transform = `translateY(${topOffset}px) translateX(${leftOffset}px) rotate(${rotation}deg)`;
-    circle.style.top = `${topValue}px`;
-    circle.style.left = `${leftValue}px`;
-    circle.style.zIndex = '2';
-    circle.style.position = 'absolute';
-
-    let directionIncrements;
-
-    // if it hits the window edges in any location, find a new random starting point for everything
-    if (
-      topValue > window.innerHeight
-      || topValue < 0
-      || leftValue > window.innerWidth
-      || leftValue < 0
-    ) {
-      topValue = getRandomNumber(0, window.innerHeight);
-      leftValue = getRandomNumber(0, window.innerWidth);
-
-      snakeDirection = config.isDirectionDifferentOnReset
-        ? getSnakeDirection() : config.defaultSnakeDirection;
-
-      directionIncrements = config.isDirectionIncrementsDifferentOnReset
-        ? makeDirectionIncrements(0, config.isSnakeAngleRandomPerDirection, config.snakeAngleMax)
-        : config.defaultDirectionIncrements;
-    }
-
-    if (numberOfCirclesUntilDirectionChange) {
-      if (circleDirectionCounter < numberOfCirclesUntilDirectionChange) {
-        circleDirectionCounter += 1;
-      } else {
-        snakeDirection = getSnakeDirection();
-
-        if (config.isDirectionChangeCircleNumberReset) {
-          numberOfCirclesUntilDirectionChange = getRandomNumber(0, 20);
-        }
-
-        circleDirectionCounter = 0;
-      }
-    }
-
-    directionIncrements = config.isDirectionIncrementsDifferentPerCircle
-      ? makeDirectionIncrements(0, config.isSnakeAngleRandomPerDirection, config.snakeAngleMax)
-      : config.defaultDirectionIncrements;
-
-    topValue += directionIncrements[snakeDirection].top;
-    leftValue += directionIncrements[snakeDirection].left;
-  }
-
-  return config.layout === 'grid' ? circleContainer : circle;
+  return circle;
 };
 
-const circles = [...Array(config.totalCircles)].map(() => createCircle());
+const insertInnerCircle = (containerElement, innerElement) => {
+  const circle = containerElement;
+  const innerCircle = innerElement || createCircle();
 
-circles.forEach((circle) => {
-  document.getElementById('background').appendChild(circle);
+  const innerCircleDimension = parseFloat(innerCircle.style.width.replace('px', ''));
+  const dimensionFraction = innerCircleDimension * (getRandomNumber(7, 9) / 10);
+
+  innerCircle.style.width = `${dimensionFraction}px`;
+  innerCircle.style.height = `${dimensionFraction}px`;
+
+  circle.style.display = 'flex';
+  circle.style.justifyContent = 'center';
+  circle.style.alignItems = 'center';
+
+  circle.appendChild(innerCircle);
+  return circle;
+};
+
+const circles = [...Array(config.totalCircles)].map(() => {
+  let circle = createCircle();
+
+  const totalInnerCircles = getRandomNumber(0, config.innerCircleTotalMax);
+
+  if (totalInnerCircles) {
+    let elementToAppendTo = circle;
+
+    [...Array(totalInnerCircles)].forEach(() => {
+      const newCircle = createCircle();
+      elementToAppendTo = insertInnerCircle(elementToAppendTo, newCircle);
+      elementToAppendTo = newCircle;
+    });
+  }
+
+  if (config.innerCircleEnabled && Math.random() < config.innerCircleProbability) {
+    circle = insertInnerCircle(circle, null);
+  }
+
+  if (config.layout === 'grid') {
+    circle = insertCircleInGridItem(circle);
+  } else if (config.layout === 'snake') {
+    circle = positionCircle(circle);
+  }
+
+  return circle;
 });
 
-// console.log('config:', config);
+circles.forEach((circle) => {
+  circlesContainer.appendChild(circle);
+});
+
+console.log('config:', config);
