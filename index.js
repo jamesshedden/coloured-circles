@@ -15,6 +15,12 @@ const AVAILABLE_SNAKE_DIRECTIONS = {
   TOP_LEFT: 'top_left',
 };
 
+const AVAILABLE_LINE_STYLES = [
+  'solid',
+  'dotted',
+  'dashed',
+];
+
 const getRandomNumber = (min, max) => Math.floor(Math.random() * (max - min) + min);
 
 const isSquare = n => n > 0 && Math.sqrt(n) % 1 === 0;
@@ -76,6 +82,10 @@ const getRandomColor = (min, max) => {
   return `rgb(${getRandomNumber(min, max)}, ${getRandomNumber(min, max)}, ${getRandomNumber(min, max)})`;
 };
 
+const getRandomLineStyle = () => AVAILABLE_LINE_STYLES[
+  getRandomNumber(0, AVAILABLE_LINE_STYLES.length - 1)
+];
+
 const getRandomCircleDiameter = (
   isCircleDiameterMaxRandomPerDirection,
   circleDiameterMax,
@@ -132,6 +142,9 @@ const minColorsTotal = 3;
 const isCircleRValueIncremental = randomTrueOrFalse();
 const isCircleGValueIncremental = randomTrueOrFalse();
 const isCircleBValueIncremental = randomTrueOrFalse();
+const circleDiameterMaxDimension = 250;
+const lineLengthMin = 3;
+const lineLengthMax = circleDiameterMaxDimension; // NOTE: Same as max diameter
 
 const colors = getColors(
   isCircleColorIncremental,
@@ -180,7 +193,7 @@ const config = {
   boxShadowMaxBlur: 200,
   boxShadowMinBlur: 100,
   defaultCircleDiameter: getRandomNumber(20, 50),
-  circleDiameterMax: getRandomNumber(20, 120),
+  circleDiameterMax: getRandomNumber(20, circleDiameterMaxDimension),
   circleGlowMaxOpacity,
   circleGlowMinOpacity,
   colors,
@@ -266,6 +279,24 @@ const config = {
   innerCircleEnabled: randomTrueOrFalse(),
   innerCircleProbability: getRandomNumber(0, 10) / 10,
   innerCircleTotalMax: 3,
+
+  // NOTE: This determines whether lines & other shapes
+  // will only appear within the parent circle (or whether
+  // they can overflow)
+  isParentCircleOverflowHidden: randomTrueOrFalse(),
+
+  isLinesEnabled: randomTrueOrFalse(),
+
+  isLineLengthChangeEnabled: randomTrueOrFalse(),
+  numberOfCirclesUntilLineLengthChange: getRandomNumber(0, 10),
+  lineLengthGradualIncrementAmount: getRandomNumber(0, 2),
+  isLineLengthChangeCircleNumberReset: randomTrueOrFalse(),
+  defaultLineLength: getRandomNumber(lineLengthMin, lineLengthMax),
+  defaultLineStyle: getRandomLineStyle(),
+  defaultLineWidth: 2,
+  isLineStyleRandomPerCircle: randomTrueOrFalse(),
+  lineLengthMin,
+  lineLengthMax,
 };
 
 if (!config.isDotsBackground) {
@@ -314,7 +345,9 @@ let borderRadius = config.defaultBorderRadius;
 let topValue;
 let leftValue;
 let snakeDirection = config.defaultSnakeDirection;
+let lineLength = config.defaultLineLength;
 let circleDirectionCounter = 0;
+let circleLineLengthCounter = 0;
 
 let {
   numberOfCirclesUntilDiameterChange,
@@ -328,6 +361,8 @@ let {
   numberOfCirclesUntilRotationChange,
   numberOfCirclesUntilBorderRadiusChange,
   numberOfCirclesUntilDirectionChange,
+  isLineLengthChangeEnabled,
+  numberOfCirclesUntilLineLengthChange,
 } = config;
 
 let topOffset = isGridOffsetChangeEnabled
@@ -412,9 +447,6 @@ const positionCircle = (circle) => {
 
 const createCircle = () => {
   const circle = document.createElement('div');
-
-  const circleContainer = document.createElement('div');
-  circleContainer.classList.add('circle-container');
 
   if (isDiameterChangeEnabled) {
     if (circleDiameterCounter < numberOfCirclesUntilDiameterChange) {
@@ -611,7 +643,11 @@ const createCircle = () => {
   circle.style.width = `${diameter}px`;
   circle.style.height = `${diameter}px`;
   circle.style.opacity = opacity;
-  circle.style.overflow = 'hidden';
+
+  if (config.isParentCircleOverflowHidden) {
+    circle.style.overflow = 'hidden';
+  }
+
   circle.style.background = color;
   circle.style.position = 'relative';
   circle.style.top = `${topOffset}px`;
@@ -624,6 +660,58 @@ const createCircle = () => {
   if (config.trianglesEnabled && Math.random() < config.trianglesProbability) {
     circle.style.borderRadius = 0;
     circle.style.clipPath = 'polygon(50% 10%, 0% 100%, 100% 100%)';
+  }
+
+  if (config.isLinesEnabled) {
+    if (isLineLengthChangeEnabled) {
+      if (circleLineLengthCounter < numberOfCirclesUntilLineLengthChange) {
+        circleLineLengthCounter += 1;
+
+        if (config.lineLengthGradualIncrementAmount) {
+          lineLength += config.lineLengthGradualIncrementAmount;
+        }
+
+        // NOTE: There's a small change that line length changes will become
+        // disabled on the next circle, meaning no more following circles
+        // will have line length changes after that.
+        //
+        // The chance will be 1 in N where N is the total number of circles.
+        isLineLengthChangeEnabled = !(Math.random() < (1 / config.totalCircles));
+      } else {
+        lineLength = getRandomNumber(config.lineLengthMin, diameter * 1.5);
+
+        if (config.isLineLengthChangeCircleNumberReset) {
+          numberOfCirclesUntilLineLengthChange = getRandomNumber(0, 20);
+        }
+
+        circleLineLengthCounter = 0;
+      }
+    }
+
+    if (!isLineLengthChangeEnabled) {
+      // NOTE: If line length changes are initially not enabled, there's a 1 in N chance
+      // that they will become enabled (where N is number of total circles)
+      isLineLengthChangeEnabled = Math.random() < (1 / config.totalCircles);
+    }
+
+    const line = document.createElement('div');
+    line.style.width = `${lineLength}px`;
+    line.style.height = `${lineLength}px`;
+    line.style.borderRadius = `${borderRadius}px`;
+    // line.style.borderWidth = '2px 0 0 0';
+    line.style.borderWidth = `${config.defaultLineWidth}px`;
+
+    line.style.borderStyle = config.isLineStyleRandomPerCircle
+      ? getRandomLineStyle()
+      : config.defaultLineStyle;
+
+    line.style.borderColor = getRandomColorFromColors();
+    line.style.zIndex = '3';
+    line.style.position = 'absolute';
+    line.style.top = `${circle.style.width / 2}px`;
+    line.style.left = `${circle.style.height / 2}px`;
+
+    circle.appendChild(line);
   }
 
   // NOTE: Commenting out the 'markmarking' behaviour
@@ -648,7 +736,7 @@ const insertInnerCircle = (containerElement, innerElement) => {
   const innerCircle = innerElement || createCircle();
 
   const innerCircleDimension = parseFloat(innerCircle.style.width.replace('px', ''));
-  const dimensionFraction = innerCircleDimension * (getRandomNumber(7, 9) / 10);
+  const dimensionFraction = innerCircleDimension * (getRandomNumber(5, 8) / 10);
 
   innerCircle.style.width = `${dimensionFraction}px`;
   innerCircle.style.height = `${dimensionFraction}px`;
